@@ -21,19 +21,11 @@
         </div>
       </div>
 
-      <button class="btn" type="submit" style="width: 100%; margin-bottom: 1.5rem; box-shadow: 0 0 20px var(--primary-glow);">
+      <!-- Button updates text on click so you know it's processing -->
+      <button class="btn" type="submit" style="width: 100%; box-shadow: 0 0 20px var(--primary-glow);" onclick="this.innerHTML='Extracting... Please wait...'; this.style.opacity='0.8';">
         Run AI Extraction
       </button>
     </form>
-
-    <!-- NEW: Navigation to bridge the gap without changing backend code -->
-    <div style="border-top: 1px solid var(--border-light); margin-top: 1rem; padding-top: 1.5rem; text-align: center;">
-      <p class="subtle" style="margin-bottom: 1rem; font-size: 0.9rem;">Finished extracting candidate data?</p>
-      
-      <a href="{{ url_for('match.home') }}" class="btn btn-ghost" style="width: 100%; border-color: var(--accent); color: var(--accent) !important;">
-        Step 3: Go to Workspace to Run Match →
-      </a>
-    </div>
   </div>
 </div>
 {% endblock %}
