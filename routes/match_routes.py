@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from database import db
-from database.models import JobDescription, Resume, MatchResult
+from database.models import JobDescription, Resume, MatchResult, CandidateProject
 import services.vector_service as vector_service
 import services.scoring_engine as scoring_engine
 import services.xai_service as xai_service
@@ -16,6 +16,22 @@ def home():
         r_count = Resume.query.filter_by(job_description_id=jd.id).count()
         job_data.append({"jd": jd, "resume_count": r_count})
     return render_template("home.html", job_data=job_data)
+
+
+@match_bp.route("/clear-all", methods=["POST"])
+def clear_all():
+    """Wipes all jobs, resumes, and match history from the database."""
+    try:
+        MatchResult.query.delete()
+        CandidateProject.query.delete()
+        Resume.query.delete()
+        JobDescription.query.delete()
+        db.session.commit()
+        flash("All workspace data has been successfully cleared.", "success")
+    except Exception as exc:
+        db.session.rollback()
+        flash(f"Failed to clear data: {exc}", "error")
+    return redirect(url_for("match.home"))
 
 
 @match_bp.route("/jd/<int:jd_id>/match", methods=["POST"])
