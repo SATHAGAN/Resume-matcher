@@ -3,7 +3,7 @@ from database import db
 from database.models import JobDescription, Resume, MatchResult
 import services.vector_service as vector_service
 import services.scoring_engine as scoring_engine
-import services.xai_generator as xai_generator
+import services.xai_service as xai_service
 
 match_bp = Blueprint("match", __name__)
 
@@ -68,7 +68,7 @@ def run_match(jd_id):
     for r in top_results:
         if not r.xai_summary:  # Generate if missing
             try:
-                r.xai_summary = xai_generator.generate_xai(jd, r.resume, r.score_breakdown)
+                r.xai_summary = xai_service.generate_xai(jd, r.resume, r.score_breakdown)
                 db.session.commit()
             except Exception:
                 db.session.rollback()
