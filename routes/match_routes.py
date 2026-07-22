@@ -1,110 +1,105 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, current_app
-
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from database import db
-from database.models import JobDescription, Resume, MatchResult, CandidateProject
-from services import vector_service, scoring_engine, xai_service, nim_client
+from database.models import JobDescription, Resume, MatchResult
+from services import vector_service, scoring_engine, xai_generator
 
 match_bp = Blueprint("match", __name__)
 
-
 @match_bp.route("/")
 def home():
-    jds = JobDescription.query.order_by(JobDescription.created_at.desc()).all()
-    resume_count = Resume.query.count()
-    return render_template("home.html", jds=jds, resume_count=resume_count)
+    jobs = JobDescription.query.order_by(JobDescription.created_at.desc()).all()
+    # Count resumes per job dynamically
+    job_data = []
+    for jd in jobs:
+        r_count = Resume.query.filter_by(job_description_id=jd.id).count()
+        job_data.append({"jd": jd, "resume_count": r_count})
+    return render_template("home.html", job_data=job_data)
 
 
-@match_bp.route("/match/<int:jd_id>")
+@match_bp.route("/jd/<int:jd_id>/match", methods=["POST"])
+def run_match(jd_id):
+    """
+    Computes or updates match scores and XAI summaries for all resumes 
+    linked to this specific Job Description.
+    """
+    jd = JobDescription.query.get_or_404(jd_id)
+    resumes = Resume.query.filter_by(job_description_id=jd_id).all()
+
+    if not resumes:
+        flash("No resumes found for this job description to analyze.", "error")
+        return redirect(url_for("match.dashboard", jd_id=jd_id))
+
+    # 1. Run hybrid search to rank candidates by vector/keyword relevance
+    candidates = vector_service.hybrid_search(jd, top_k=len(resumes))
+
+    for resume, hybrid_score, vector_similarity in candidates:
+        # 2. Compute deterministic sub-scores
+        breakdown = scoring_engine.compute_score(jd, resume, resume.projects, vector_similarity)
+
+        # 3. Check if a match result already exists for this resume & job
+        existing_result = MatchResult.query.filter_by(
+            job_description_id=jd.id, resume_id=resume.id
+        ).first()
+
+        if existing_result:
+            # UPDATE existing score and breakdown so ranks update correctly
+            existing_result.final_score = breakdown["final_score"]
+            existing_result.score_breakdown = breakdown
+        else:
+            # CREATE new result if it's a newly added resume
+            new_result = MatchResult(
+                job_description_id=jd.id,
+                resume_id=resume.id,
+                final_score=breakdown["final_score"],
+                score_breakdown=breakdown,
+            )
+            db.session.add(new_result)
+
+    db.session.commit()
+
+    # 4. Generate XAI write-ups for the top candidates
+    top_n = current_app.config["XAI_TOP_N"]
+    top_results = MatchResult.query.filter_by(job_description_id=jd_id)\
+        .order_by(MatchResult.final_score.desc())\
+        .limit(top_n).all()
+
+    for r in top_results:
+        if not r.xai_summary:  # Generate if missing
+            try:
+                r.xai_summary = xai_generator.generate_xai(jd, r.resume, r.score_breakdown)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+    flash("Candidate rankings and scores successfully updated!", "success")
+    return redirect(url_for("match.dashboard", jd_id=jd_id))
+
+
+@match_bp.route("/jd/<int:jd_id>/dashboard")
 def dashboard(jd_id):
     jd = JobDescription.query.get_or_404(jd_id)
-    resume_count = Resume.query.count()
-
-    results = (
-        MatchResult.query
-        .filter_by(job_description_id=jd_id)
-        .order_by(MatchResult.final_score.desc())
-        .all()
-    )
     
-    top_results = [r for r in results if r.xai_summary]
-    other_results = [r for r in results if not r.xai_summary]
+    resume_count = Resume.query.filter_by(job_description_id=jd_id).count()
+    results = MatchResult.query.filter_by(job_description_id=jd_id)\
+        .order_by(MatchResult.final_score.desc())\
+        .all()
+
+    has_results = len(results) > 0
+    
+    # SMART AUTO-UPDATE: If new resumes were added that haven't been scored yet, 
+    # automatically trigger a background match calculation!
+    if resume_count > len(results) and resume_count > 0:
+        return run_match(jd_id)
+
+    top_n = current_app.config["XAI_TOP_N"]
+    top_results = results[:top_n]
+    other_results = results[top_n:]
 
     return render_template(
         "dashboard.html",
         jd=jd,
         resume_count=resume_count,
+        has_results=has_results,
         top_results=top_results,
         other_results=other_results,
-        has_results=bool(results),
     )
-
-
-@match_bp.route("/match/<int:jd_id>/run", methods=["POST"])
-def run_match(jd_id):
-    jd = JobDescription.query.get_or_404(jd_id)
-
-    if Resume.query.count() == 0:
-        flash("Upload at least one resume before running a match.", "error")
-        return redirect(url_for("match.dashboard", jd_id=jd_id))
-
-    try:
-        candidates = vector_service.hybrid_search(jd, top_k=current_app.config["HYBRID_SEARCH_TOP_K"])
-
-        scored = []
-        for resume, _hybrid_score, vector_similarity in candidates:
-            breakdown = scoring_engine.compute_score(jd, resume, resume.projects, vector_similarity)
-            scored.append((resume, breakdown))
-        scored.sort(key=lambda t: t[1]["final_score"], reverse=True)
-
-        MatchResult.query.filter_by(job_description_id=jd.id).delete()
-
-        top_n = current_app.config["XAI_TOP_N"]
-        for i, (resume, breakdown) in enumerate(scored):
-            xai_summary = None
-            if i < top_n:
-                try:
-                    xai_summary = xai_service.generate_explanation(jd, resume, resume.projects, breakdown)
-                except nim_client.NIMError as exc:
-                    flash(f"XAI writeup failed for {resume.candidate_name}: {exc}", "error")
-
-            db.session.add(MatchResult(
-                job_description_id=jd.id,
-                resume_id=resume.id,
-                final_score=breakdown["final_score"],
-                score_breakdown=breakdown,
-                xai_summary=xai_summary,
-            ))
-
-        db.session.commit()
-        flash(f"Matching complete - scored {len(scored)} candidates.", "success")
-
-    except Exception as exc: 
-        db.session.rollback()
-        flash(f"Matching failed unexpectedly: {exc}", "error")
-
-    return redirect(url_for("match.dashboard", jd_id=jd_id))
-
-
-# ---------------------------------------------------------------- Delete Routes
-
-@match_bp.route("/delete_jd/<int:jd_id>", methods=["POST"])
-def delete_jd(jd_id):
-    """Deletes a specific job description and its match results."""
-    jd = JobDescription.query.get_or_404(jd_id)
-    MatchResult.query.filter_by(job_description_id=jd_id).delete()
-    db.session.delete(jd)
-    db.session.commit()
-    flash(f"Job Description '{jd.title}' deleted.", "success")
-    return redirect(url_for("match.home"))
-
-
-@match_bp.route("/clear_all", methods=["POST"])
-def clear_all():
-    """Wipes the entire workspace (JDs, Resumes, and Matches) to start fresh."""
-    MatchResult.query.delete()
-    CandidateProject.query.delete()
-    Resume.query.delete()
-    JobDescription.query.delete()
-    db.session.commit()
-    flash("Workspace cleared. Ready for a new session.", "success")
-    return redirect(url_for("match.home"))

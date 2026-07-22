@@ -17,11 +17,6 @@
       ← Back to Workspace
     </a>
 
-    <!-- Add Resumes to THIS specific job -->
-    <a href="{{ url_for('upload.new_resume', jd_id=jd.id) }}" class="btn btn-ghost" style="border-color: var(--primary); color: var(--primary) !important;">
-      + Add Resumes
-    </a>
-
     <!-- Recalculate Button -->
     <form method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}" style="margin: 0;">
       <button class="btn btn-ghost" type="submit" style="border-color: var(--accent); color: var(--accent) !important;">
@@ -42,7 +37,6 @@
       <p class="subtle" style="max-width: 500px; margin: 0 auto 2rem auto;">
         The Job Description is loaded. Now, upload your batch of resumes to rank them against this profile.
       </p>
-      <!-- Updated to include jd_id -->
       <a href="{{ url_for('upload.new_resume', jd_id=jd.id) }}" class="btn" style="font-size: 1.1rem; padding: 1rem 2.5rem; box-shadow: 0 0 20px var(--primary-glow);">
         + Upload Resumes
       </a>
