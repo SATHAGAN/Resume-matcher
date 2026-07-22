@@ -36,6 +36,9 @@ class Resume(db.Model):
     __tablename__ = "resumes"
 
     id = db.Column(db.Integer, primary_key=True)
+    # NEW COLUMN: The digital paperclip linking this resume to a specific job
+    job_description_id = db.Column(db.Integer, db.ForeignKey("job_descriptions.id"), nullable=False)
+    
     candidate_name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255))
     phone = db.Column(db.String(64))
@@ -46,9 +49,7 @@ class Resume(db.Model):
     education = db.Column(db.JSON, default=list)
     certifications = db.Column(db.JSON, default=list)
 
-    # 1024-dim NIM embedding (nv-embedqa-e5-v5, input_type="passage"), stored as JSON float list
     embedding = db.Column(db.JSON)
-
     created_at = db.Column(db.DateTime, default=utcnow)
 
     projects = db.relationship(
@@ -60,7 +61,6 @@ class Resume(db.Model):
 
     def __repr__(self):
         return f"<Resume {self.id} {self.candidate_name!r}>"
-
 
 class CandidateProject(db.Model):
     """Demonstrated skill evidence extracted from a resume's project/work history."""

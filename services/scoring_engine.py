@@ -16,11 +16,11 @@ reported on a 0..100 scale.
 """
 
 WEIGHTS = {
-    "skill_match": 0.20,
+    "skill_match": 0.15,
     "skill_evidence_in_projects": 0.30,
-    "project_complexity": 0.30,
+    "project_complexity": 0.25,
     "experience_years": 0.05,
-    "semantic_vector_similarity": 0.10,
+    "semantic_vector_similarity": 0.20,
     "education_certs": 0.05,
 }
 
@@ -30,10 +30,18 @@ _LEVEL_TO_YEARS = {
 }
 
 _COMPLEXITY_SIGNALS = [
+    # Backend / Data
     "million", "billion", "microservice", "distributed", "high availability",
     "scalab", "concurrent", "real-time", "realtime", "kubernetes", "load balanc",
     "sharding", "petabyte", "terabyte", "sla", "99.9", "throughput", "latency",
     "fault-toleran", "multi-region", "high-throughput", "low-latency", "replication",
+    
+    # Frontend / UI / Mobile
+    "accessibility", "a11y", "state management", "responsive", "web vitals", 
+    "cross-platform", "figma", "design system", "component library",
+    
+    # General Impact / Process
+    "conversion rate", "seo", "ci/cd", "pipeline", "optimization", "refactor"
 ]
 
 

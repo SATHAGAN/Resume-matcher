@@ -52,13 +52,13 @@ def new_jd():
 
         flash(f"Job description \u201c{jd.title}\u201d added.", "success")
         
-        # CHANGE 1: Move to Step 2 (Upload Resumes) instead of jumping to the dashboard
-        return redirect(url_for("upload.new_resume"))
+        # Pass the newly created JD ID to the resume upload route
+        return redirect(url_for("upload.new_resume", jd_id=jd.id))
 
     except nim_client.NIMError as exc:
         flash(f"AI extraction failed: {exc}", "error")
         return redirect(url_for("upload.new_jd"))
-    except Exception as exc:  # noqa: BLE001 - surface any ingestion error to the recruiter
+    except Exception as exc:  
         flash(f"Could not process job description: {exc}", "error")
         return redirect(url_for("upload.new_jd"))
 
@@ -67,13 +67,17 @@ def new_jd():
 
 @upload_bp.route("/resumes/new", methods=["GET", "POST"])
 def new_resume():
+    # Grab the Job Description ID from the URL
+    jd_id = request.args.get("jd_id")
+    
     if request.method == "GET":
-        return render_template("new_resume.html")
+        # Pass the jd_id to the template so the form action keeps it
+        return render_template("new_resume.html", jd_id=jd_id)
 
     files = [f for f in request.files.getlist("resume_files") if f and f.filename]
     if not files:
         flash("Select at least one .pdf or .docx resume to upload.", "error")
-        return redirect(url_for("upload.new_resume"))
+        return redirect(url_for("upload.new_resume", jd_id=jd_id))
 
     added, errors = [], []
 
@@ -88,6 +92,7 @@ def new_resume():
             embedding = vector_service.embed_resume_text(extraction, raw_text)
 
             resume = Resume(
+                job_description_id=jd_id,  # Locks this resume to the specific job
                 candidate_name=extraction.candidate_name,
                 email=extraction.email,
                 phone=extraction.phone,
@@ -99,7 +104,7 @@ def new_resume():
                 embedding=embedding,
             )
             db.session.add(resume)
-            db.session.flush()  # assign resume.id before adding child rows
+            db.session.flush() 
 
             for proj in extraction.projects:
                 db.session.add(CandidateProject(
@@ -112,13 +117,13 @@ def new_resume():
                 ))
 
             db.session.commit()
-            vector_service.index_resume(resume)  # keyword (FTS5) index
+            vector_service.index_resume(resume)  
             added.append(resume.candidate_name)
 
         except nim_client.NIMError as exc:
             db.session.rollback()
             errors.append(f"{f.filename}: AI extraction failed ({exc})")
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:  
             db.session.rollback()
             errors.append(f"{f.filename}: {exc}")
 
@@ -127,10 +132,5 @@ def new_resume():
     for err in errors:
         flash(err, "error")
 
-    # CHANGE 2: After extracting resumes, find the latest JD and jump straight to the match dashboard
-    latest_jd = db.session.query(JobDescription).order_by(JobDescription.id.desc()).first()
-    if latest_jd:
-        return redirect(url_for("match.dashboard", jd_id=latest_jd.id))
-        
-    # Fallback in case a JD was not found
-    return redirect(url_for("match.home"))
+    # Redirect straight to the match dashboard for this specific job
+    return redirect(url_for("match.dashboard", jd_id=jd_id))

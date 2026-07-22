@@ -130,22 +130,21 @@ def _keyword_scores(jd) -> dict:
     spread = (worst - best) or 1.0
     return {resume_id: 1.0 - ((rank - best) / spread) for resume_id, rank in rows}
 
-
 def hybrid_search(jd, top_k=None):
     """
     Retrieves the top_k resumes for a JD by blending keyword (BM25) and
     semantic (cosine) scores - without running the LLM against every resume
     in the bank.
-
-    Returns a list of (Resume, hybrid_score, vector_similarity) tuples,
-    sorted best-first. vector_similarity is passed through separately since
-    the scoring engine needs it as its own weighted factor.
+    
+    ISOLATION UPDATE: Only searches resumes explicitly linked to this JD.
     """
     top_k = top_k or current_app.config["HYBRID_SEARCH_TOP_K"]
     keyword_scores = _keyword_scores(jd)
 
     scored = []
-    for resume in Resume.query.all():
+    
+    # NEW: Filter by the current job_description_id instead of querying all resumes
+    for resume in Resume.query.filter_by(job_description_id=jd.id).all():
         vec_score = cosine_similarity(jd.embedding, resume.embedding)
         kw_score = keyword_scores.get(resume.id, 0.0)
         hybrid = 0.5 * kw_score + 0.5 * vec_score

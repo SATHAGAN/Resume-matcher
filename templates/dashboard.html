@@ -2,7 +2,7 @@
 {% block title %}Rankings | {{ jd.title }}{% endblock %}
 {% block content %}
 
-<div class="dashboard-top">
+<div class="dashboard-top" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 2rem;">
   <div>
     <div class="subtle" style="text-transform: uppercase; letter-spacing: 2px; color: var(--accent);">Target Profile</div>
     <h1 style="margin-top: 0.5rem;">{{ jd.title }}</h1>
@@ -10,9 +10,23 @@
       Candidate Bank: {{ resume_count|default('0') }} resumes
     </div>
   </div>
-  <div style="display: flex; gap: 1rem;">
-    <form method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}">
-      <button class="btn btn-ghost" type="submit" style="border-color: var(--accent); color: var(--accent) !important;">↻ Recalculate Score</button>
+  
+  <div style="display: flex; gap: 1rem; align-items: center;">
+    <!-- Back to Home Button -->
+    <a href="{{ url_for('match.home') }}" class="btn btn-ghost" style="border-color: var(--border-light); color: var(--text-muted) !important;">
+      ← Back to Workspace
+    </a>
+
+    <!-- Add Resumes to THIS specific job -->
+    <a href="{{ url_for('upload.new_resume', jd_id=jd.id) }}" class="btn btn-ghost" style="border-color: var(--primary); color: var(--primary) !important;">
+      + Add Resumes
+    </a>
+
+    <!-- Recalculate Button -->
+    <form method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}" style="margin: 0;">
+      <button class="btn btn-ghost" type="submit" style="border-color: var(--accent); color: var(--accent) !important;">
+        ↻ Recalculate Score
+      </button>
     </form>
   </div>
 </div>
@@ -28,7 +42,8 @@
       <p class="subtle" style="max-width: 500px; margin: 0 auto 2rem auto;">
         The Job Description is loaded. Now, upload your batch of resumes to rank them against this profile.
       </p>
-      <a href="{{ url_for('upload.new_resume') }}" class="btn" style="font-size: 1.1rem; padding: 1rem 2.5rem; box-shadow: 0 0 20px var(--primary-glow);">
+      <!-- Updated to include jd_id -->
+      <a href="{{ url_for('upload.new_resume', jd_id=jd.id) }}" class="btn" style="font-size: 1.1rem; padding: 1rem 2.5rem; box-shadow: 0 0 20px var(--primary-glow);">
         + Upload Resumes
       </a>
     </div>
