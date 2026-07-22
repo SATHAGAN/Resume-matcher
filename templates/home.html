@@ -16,8 +16,8 @@
   
   <!-- Global Clear All Data Button -->
   <div>
-    <!-- Note: Create a Flask route like @app.route('/api/clear_all', methods=['POST']) to handle this -->
-    <form action="/api/clear_all" method="POST" onsubmit="return confirm('Are you sure you want to wipe ALL Jobs and Resumes? This cannot be undone.');">
+    <!-- Updated to use Flask's url_for pointing to the clear_all route in match.py -->
+    <form action="{{ url_for('match.clear_all') }}" method="POST" onsubmit="return confirm('Are you sure you want to wipe ALL Jobs and Resumes? This cannot be undone.');">
       <button type="submit" class="btn btn-outline-danger">🗑️ Clear All Data</button>
     </form>
   </div>
@@ -46,8 +46,8 @@
         
         <div style="display: flex; gap: 1rem; align-items: center;">
           <!-- Individual Delete Button -->
-          <!-- Note: Create a Flask route like @app.route('/api/delete_jd/<id>', methods=['POST']) -->
-          <form action="/api/delete_jd/{{ jd.id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Delete {{ jd.title }} and its matches?');">
+          <!-- Updated to use Flask's url_for pointing to the delete_jd route in match.py -->
+          <form action="{{ url_for('match.delete_jd', jd_id=jd.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Delete {{ jd.title }} and its matches?');">
             <button type="submit" class="btn btn-outline-danger" style="padding: 0.5rem 1rem;">Delete</button>
           </form>
           

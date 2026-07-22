@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, current_app
 
 from database import db
-from database.models import JobDescription, Resume, MatchResult
+from database.models import JobDescription, Resume, MatchResult, CandidateProject
 from services import vector_service, scoring_engine, xai_service, nim_client
 
 match_bp = Blueprint("match", __name__)
@@ -25,9 +25,7 @@ def dashboard(jd_id):
         .order_by(MatchResult.final_score.desc())
         .all()
     )
-    # Split purely on whether the XAI writeup succeeded, not on position - if an XAI
-    # call fails partway through the top N, that candidate falls through to the plain
-    # table instead of being duplicated or silently dropped.
+    
     top_results = [r for r in results if r.xai_summary]
     other_results = [r for r in results if not r.xai_summary]
 
@@ -43,12 +41,6 @@ def dashboard(jd_id):
 
 @match_bp.route("/match/<int:jd_id>/run", methods=["POST"])
 def run_match(jd_id):
-    """
-    Steps 4-6, triggered on demand ('Find Candidates'):
-      4. hybrid search -> top 50 resumes
-      5. deterministic multi-factor scoring for all 50
-      6. XAI writeup for the top 10 only
-    """
     jd = JobDescription.query.get_or_404(jd_id)
 
     if Resume.query.count() == 0:
@@ -56,17 +48,14 @@ def run_match(jd_id):
         return redirect(url_for("match.dashboard", jd_id=jd_id))
 
     try:
-        # Step 4: hybrid search retrieval (cheap - no LLM call)
         candidates = vector_service.hybrid_search(jd, top_k=current_app.config["HYBRID_SEARCH_TOP_K"])
 
-        # Step 5: deterministic scoring for every retrieved candidate
         scored = []
         for resume, _hybrid_score, vector_similarity in candidates:
             breakdown = scoring_engine.compute_score(jd, resume, resume.projects, vector_similarity)
             scored.append((resume, breakdown))
         scored.sort(key=lambda t: t[1]["final_score"], reverse=True)
 
-        # Clear any previous run for this JD so re-running reflects the current resume bank.
         MatchResult.query.filter_by(job_description_id=jd.id).delete()
 
         top_n = current_app.config["XAI_TOP_N"]
@@ -74,7 +63,6 @@ def run_match(jd_id):
             xai_summary = None
             if i < top_n:
                 try:
-                    # Step 6: XAI writeup - only for the top N
                     xai_summary = xai_service.generate_explanation(jd, resume, resume.projects, breakdown)
                 except nim_client.NIMError as exc:
                     flash(f"XAI writeup failed for {resume.candidate_name}: {exc}", "error")
@@ -90,11 +78,33 @@ def run_match(jd_id):
         db.session.commit()
         flash(f"Matching complete - scored {len(scored)} candidates.", "success")
 
-    except nim_client.NIMError as exc:
-        db.session.rollback()
-        flash(f"Matching failed: {exc}", "error")
-    except Exception as exc:  # noqa: BLE001 - surface any unexpected pipeline error to the recruiter
+    except Exception as exc: 
         db.session.rollback()
         flash(f"Matching failed unexpectedly: {exc}", "error")
 
     return redirect(url_for("match.dashboard", jd_id=jd_id))
+
+
+# ---------------------------------------------------------------- Delete Routes
+
+@match_bp.route("/delete_jd/<int:jd_id>", methods=["POST"])
+def delete_jd(jd_id):
+    """Deletes a specific job description and its match results."""
+    jd = JobDescription.query.get_or_404(jd_id)
+    MatchResult.query.filter_by(job_description_id=jd_id).delete()
+    db.session.delete(jd)
+    db.session.commit()
+    flash(f"Job Description '{jd.title}' deleted.", "success")
+    return redirect(url_for("match.home"))
+
+
+@match_bp.route("/clear_all", methods=["POST"])
+def clear_all():
+    """Wipes the entire workspace (JDs, Resumes, and Matches) to start fresh."""
+    MatchResult.query.delete()
+    CandidateProject.query.delete()
+    Resume.query.delete()
+    JobDescription.query.delete()
+    db.session.commit()
+    flash("Workspace cleared. Ready for a new session.", "success")
+    return redirect(url_for("match.home"))

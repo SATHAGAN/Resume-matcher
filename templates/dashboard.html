@@ -7,35 +7,55 @@
     <div class="subtle" style="text-transform: uppercase; letter-spacing: 2px; color: var(--accent);">Target Profile</div>
     <h1 style="margin-top: 0.5rem;">{{ jd.title }}</h1>
     <div style="color: var(--text-muted); margin-top: 0.5rem;">
-      Analyzing {{ resume_count|default('0') }} candidates
+      Candidate Bank: {{ resume_count|default('0') }} resumes
     </div>
   </div>
   <div style="display: flex; gap: 1rem;">
     <!-- Recalculate Button -->
     <form method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}">
-      <button class="btn btn-ghost" type="submit" style="border-color: var(--accent); color: var(--accent) !important;">↻ Run Match Engine</button>
+      <button class="btn btn-ghost" type="submit" style="border-color: var(--accent); color: var(--accent) !important;">↻ Recalculate Score</button>
     </form>
   </div>
 </div>
 
-<!-- FLOW FIX: If no results/resumes, prompt for Step 2 -->
+<!-- FLOW FIX: Smart Dashboard Empty States -->
 {% if not has_results %}
-  <div class="card" style="text-align: center; padding: 5rem; border: 2px dashed var(--primary); background: rgba(139, 92, 246, 0.05);">
-    <div style="font-size: 3.5rem; margin-bottom: 1rem;">📂</div>
-    <h3 style="color: #FFF;">Step 2: Inject Candidate Data</h3>
-    <p class="subtle" style="max-width: 500px; margin: 0 auto 2rem auto;">
-      The Job Description is loaded. Now, upload your batch of resumes to rank them against this profile.
-    </p>
-    <a href="{{ url_for('upload.new_resume') }}" class="btn" style="font-size: 1.1rem; padding: 1rem 2.5rem; box-shadow: 0 0 20px var(--primary-glow);">
-      + Upload Resumes
-    </a>
-  </div>
+  
+  {% if resume_count == 0 %}
+    <!-- STATE A: User hasn't uploaded resumes yet -->
+    <div class="card" style="text-align: center; padding: 5rem; border: 2px dashed var(--primary); background: rgba(139, 92, 246, 0.05);">
+      <div style="font-size: 3.5rem; margin-bottom: 1rem;">📂</div>
+      <h3 style="color: #FFF;">Step 2: Inject Candidate Data</h3>
+      <p class="subtle" style="max-width: 500px; margin: 0 auto 2rem auto;">
+        The Job Description is loaded. Now, upload your batch of resumes to rank them against this profile.
+      </p>
+      <a href="{{ url_for('upload.new_resume') }}" class="btn" style="font-size: 1.1rem; padding: 1rem 2.5rem; box-shadow: 0 0 20px var(--primary-glow);">
+        + Upload Resumes
+      </a>
+    </div>
+
+  {% else %}
+    <!-- STATE B: Resumes are uploaded, time to run the match -->
+    <div class="card" style="text-align: center; padding: 5rem; border: 2px dashed var(--accent); background: rgba(6, 182, 212, 0.05);">
+      <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚙️</div>
+      <h3 style="color: #FFF;">Step 3: Run AI Match Engine</h3>
+      <p class="subtle" style="max-width: 500px; margin: 0 auto 2rem auto;">
+        {{ resume_count }} candidate resumes are loaded and ready. Click below to run the AI scoring engine against your Job Description.
+      </p>
+      <form method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}">
+        <button class="btn" type="submit" style="font-size: 1.1rem; padding: 1rem 2.5rem; background: var(--accent); box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);">
+          ⚡ Run AI Match
+        </button>
+      </form>
+    </div>
+  {% endif %}
+
 {% else %}
 
-  <!-- YOUR EXISTING RANKING LOOP GOES HERE -->
+  <!-- YOUR EXISTING RANKING CODE FOR RESULTS -->
   <div style="display: grid; gap: 2rem;">
   {% for r in top_results %}
-     <!-- ... the rest of the candidate ranking code I provided previously ... -->
+     <!-- ... Candidate Card HTML goes here ... -->
   {% endfor %}
   </div>
 
