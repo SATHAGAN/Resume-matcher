@@ -36,7 +36,7 @@ def _headers():
     }
 
 
-def chat_completion(messages, model=None, temperature=0.2, max_tokens=2048, json_mode=True, timeout=60):
+def chat_completion(messages, model=None, temperature=0.2, max_tokens=2048, json_mode=True, timeout=120):
     """
     Calls NIM's /chat/completions. Returns the raw string content of the
     first choice. Caller is responsible for JSON-parsing if json_mode=True
