@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Add Resumes{% endblock %}
+{% block content %}
+
+<div class="eyebrow">Step 1 &middot; Ingestion</div>
+<h1>Add resumes to the bank</h1>
+<p class="subtle">Upload one or more .pdf / .docx resumes. Each one is parsed, then run through
+  NIM to extract skills, education, certifications, and &mdash; critically &mdash; a detailed
+  project history used later as skill <em>evidence</em>, not just keywords.</p>
+
+<form class="form-card" method="post" enctype="multipart/form-data" style="margin-top: 1.5rem;">
+  <div class="field">
+    <label for="resume_files">Resume files</label>
+    <div class="file-drop">
+      <input type="file" id="resume_files" name="resume_files" accept=".pdf,.docx" multiple>
+      <div class="subtle" style="margin-top:0.4rem;">Select multiple files at once</div>
+    </div>
+  </div>
+
+  <button class="btn" type="submit">Extract &amp; save</button>
+</form>
+
+{% endblock %}

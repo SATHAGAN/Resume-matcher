@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ jd.title }} &middot; Dashboard{% endblock %}
+{% block content %}
+
+<div class="jd-summary">
+  <div class="eyebrow">Job Description &middot; #{{ '%03d'|format(jd.id) }}</div>
+  <h1>{{ jd.title }}</h1>
+  <p class="subtle">{{ jd.domain }} &middot; {{ jd.experience_level }}
+    {% if jd.min_years_experience %} &middot; {{ jd.min_years_experience|round(1) }}+ yrs{% endif %}
+  </p>
+
+  <div class="chip-row">
+    {% for skill in jd.required_skills %}<span class="chip">{{ skill }}</span>{% endfor %}
+    {% for skill in jd.preferred_skills %}<span class="chip preferred">{{ skill }}</span>{% endfor %}
+  </div>
+</div>
+
+<div class="run-match-bar">
+  <div class="subtle">{{ resume_count }} resume(s) in the bank &middot; hybrid search pulls the top {{ config.HYBRID_SEARCH_TOP_K }}, scoring engine ranks all of them, XAI writeup runs on the top {{ config.XAI_TOP_N }}.</div>
+  <form method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}">
+    <button class="btn" type="submit">{{ 'Re-run' if has_results else 'Find candidates' }}</button>
+  </form>
+</div>
+
+{% if not has_results %}
+  <div class="empty-state">
+    No matching run yet for this job description.<br>Click <strong>Find candidates</strong> above to score the resume bank.
+  </div>
+{% else %}
+
+  {% for r in top_results %}
+    {% set tier = r.final_score|score_tier %}
+    <article class="candidate-card {{ tier }}">
+      <div class="candidate-head">
+        <div>
+          <div class="candidate-rank">CANDIDATE No. {{ '%03d'|format(loop.index) }}</div>
+          <div class="candidate-name">{{ r.resume.candidate_name }}</div>
+          <div class="subtle">{{ r.resume.total_experience_years|round(1) }} yrs experience
+            {% if r.resume.email %} &middot; {{ r.resume.email }}{% endif %}</div>
+        </div>
+        <div class="candidate-final-score {{ tier }}">
+          <div class="score-number">{{ r.final_score|round(0)|int }}</div>
+          <div class="score-label">/ 100</div>
+          {% if tier == 'tier-strong' %}<div class="verified-stamp">EVIDENCE VERIFIED</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="ledger">
+        {% for key, value in r.score_breakdown.sub_scores.items() %}
+          <div class="ledger-row">
+            <span class="factor-name">{{ FACTOR_LABELS.get(key, key) }}</span>
+            <span class="factor-weight">w={{ r.score_breakdown.weights[key] }}</span>
+            <span>{{ (value * 100)|round(0)|int }}%</span>
+            <span>{{ (value * r.score_breakdown.weights[key] * 100)|round(1) }} pts</span>
+          </div>
+          <div class="ledger-bar-track"><div class="ledger-bar-fill" style="width: {{ (value * 100)|round(0)|int }}%;"></div></div>
+        {% endfor %}
+        <div class="ledger-total"><span>Final score</span><span>{{ r.final_score }} / 100</span></div>
+      </div>
+
+      {% if r.xai_summary %}
+        <div class="section-label">Why this score</div>
+        <p class="reasoning">{{ r.xai_summary.reasoning }}</p>
+
+        <div class="hero-grid" style="margin-top: 0.5rem;">
+          <div>
+            <div class="section-label">Strengths</div>
+            <ul class="pill-list strengths">
+              {% for s in r.xai_summary.strengths %}<li>{{ s }}</li>{% endfor %}
+            </ul>
+          </div>
+          <div>
+            <div class="section-label">Skill gaps</div>
+            {% if r.xai_summary.skill_gaps %}
+              <ul class="pill-list gaps">
+                {% for g in r.xai_summary.skill_gaps %}<li>{{ g }}</li>{% endfor %}
+              </ul>
+            {% else %}
+              <p class="subtle">No notable gaps identified.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="section-label">Suggested interview questions</div>
+        <ul class="pill-list questions">
+          {% for q in r.xai_summary.suggested_interview_questions %}<li>{{ q }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if r.resume.projects %}
+        <div class="section-label">Verified project evidence</div>
+        <div class="project-evidence">
+          {% for p in r.resume.projects %}
+            <div class="project-item">
+              <div class="project-title">{{ p.title }}</div>
+              {% if p.business_impact %}<div class="project-impact">{{ p.business_impact }}</div>{% endif %}
+              {% if p.tech_stack %}
+                <div class="tech-tags">{% for t in p.tech_stack %}<span>{{ t }}</span>{% endfor %}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </article>
+  {% endfor %}
+
+  {% if other_results %}
+    <div class="section-label" style="margin-top: 2rem;">Also scored (outside top {{ config.XAI_TOP_N }})</div>
+    <table class="plain-table">
+      <thead><tr><th>Candidate</th><th>Score</th><th>Top skills</th></tr></thead>
+      <tbody>
+        {% for r in other_results %}
+          <tr>
+            <td>{{ r.resume.candidate_name }}</td>
+            <td class="score-cell">{{ r.final_score }}</td>
+            <td class="subtle">{{ r.resume.skills[:6]|join(', ') }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+{% endif %}
+
+{% endblock %}
