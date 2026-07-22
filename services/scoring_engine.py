@@ -16,12 +16,12 @@ reported on a 0..100 scale.
 """
 
 WEIGHTS = {
-    "skill_match": 0.30,
-    "skill_evidence_in_projects": 0.20,
-    "project_complexity": 0.15,
-    "experience_years": 0.15,
+    "skill_match": 0.20,
+    "skill_evidence_in_projects": 0.30,
+    "project_complexity": 0.30,
+    "experience_years": 0.05,
     "semantic_vector_similarity": 0.10,
-    "education_certs": 0.10,
+    "education_certs": 0.05,
 }
 
 _LEVEL_TO_YEARS = {
