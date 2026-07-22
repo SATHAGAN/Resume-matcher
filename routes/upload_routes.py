@@ -2,7 +2,10 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 
 from database import db
 from database.models import JobDescription, Resume, CandidateProject
-from services import text_extractor, ai_extractor, vector_service, nim_client
+import services.text_extractor as text_extractor
+import services.ai_extractor as ai_extractor
+import services.vector_service as vector_service
+import services.nim_client as nim_client
 
 upload_bp = Blueprint("upload", __name__)
 

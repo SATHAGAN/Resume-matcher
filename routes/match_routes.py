@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from database import db
 from database.models import JobDescription, Resume, MatchResult
-from services import vector_service, scoring_engine, xai_generator
+import services.vector_service as vector_service
+import services.scoring_engine as scoring_engine
+import services.xai_generator as xai_generator
 
 match_bp = Blueprint("match", __name__)
 
