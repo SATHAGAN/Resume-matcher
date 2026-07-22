@@ -51,7 +51,9 @@ def new_jd():
         db.session.commit()
 
         flash(f"Job description \u201c{jd.title}\u201d added.", "success")
-        return redirect(url_for("match.dashboard", jd_id=jd.id))
+        
+        # CHANGE 1: Move to Step 2 (Upload Resumes) instead of jumping to the dashboard
+        return redirect(url_for("upload.new_resume"))
 
     except nim_client.NIMError as exc:
         flash(f"AI extraction failed: {exc}", "error")
@@ -125,4 +127,10 @@ def new_resume():
     for err in errors:
         flash(err, "error")
 
-    return redirect(url_for("upload.new_resume"))
+    # CHANGE 2: After extracting resumes, find the latest JD and jump straight to the match dashboard
+    latest_jd = db.session.query(JobDescription).order_by(JobDescription.id.desc()).first()
+    if latest_jd:
+        return redirect(url_for("match.dashboard", jd_id=latest_jd.id))
+        
+    # Fallback in case a JD was not found
+    return redirect(url_for("match.home"))
