@@ -1,23 +1,26 @@
 {% extends "base.html" %}
-{% block title %}Upload Resumes | Evidence Desk{% endblock %}
+{% block title %}Step 2: Candidate Data{% endblock %}
 {% block content %}
 
-<div style="max-width: 600px; margin: 0 auto;">
-  <h1 style="text-align: center; margin-bottom: 0.5rem;">Upload Resumes</h1>
-  <p class="subtle" style="text-align: center; margin-bottom: 2.5rem;">Add candidate profiles to the talent bank.</p>
+<div style="max-width: 700px; margin: 0 auto;">
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <div class="subtle" style="text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; color: var(--accent);">Step 2 of 3</div>
+    <h1>Inject Candidate Data</h1>
+    <p class="subtle">Drop the batch of resumes you want to analyze against the profile.</p>
+  </div>
 
   <div class="card">
     <form method="post" enctype="multipart/form-data">
       <div class="field">
-        <label for="resume_files">Select Files (Multiple allowed)</label>
-        <div class="file-drop" style="padding: 4rem 2rem;">
+        <label>Candidate Documents</label>
+        <div class="file-drop" style="padding: 5rem 2rem;">
           <input type="file" id="resume_files" name="resume_files" accept=".pdf,.docx" multiple required>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="margin-bottom: 15px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-          <div class="subtle">Drag & drop multiple PDFs or DOCXs here</div>
+          <div style="font-size: 2.5rem; margin-bottom: 1rem;">📂</div>
+          <div>Drag & drop all candidate PDFs here</div>
         </div>
       </div>
 
-      <button class="btn" type="submit" style="width: 100%; padding: 0.75rem; font-size: 1rem;">Upload & Parse</button>
+      <button class="btn" type="submit" style="width: 100%;">Run AI Extraction →</button>
     </form>
   </div>
 </div>

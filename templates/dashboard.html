@@ -1,95 +1,81 @@
 {% extends "base.html" %}
-{% block title %}Rankings | {{ jd.title }}{% endblock %}
+{% block title %}AI Match Results{% endblock %}
 {% block content %}
 
-<div class="dashboard-header">
+<div class="dashboard-top">
   <div>
-    <div class="subtle" style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; margin-bottom: 0.5rem; color: var(--primary);">Job Requirement</div>
-    <h1>{{ jd.title }}</h1>
-    <div class="candidate-meta">
-      <span>{{ jd.domain }}</span>
-      <span>&middot;</span>
-      <span>{{ jd.experience_level }}</span>
+    <div class="subtle" style="text-transform: uppercase; letter-spacing: 2px; color: var(--accent);">Step 3 of 3</div>
+    <h1 style="margin-top: 0.5rem;">Match Analytics</h1>
+    <div style="color: var(--text-muted); margin-top: 0.5rem;">
+      Analyzing {{ resume_count }} candidates against: <strong style="color:#FFF;">{{ jd.title }}</strong>
     </div>
   </div>
-  <form method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}">
-    <button class="btn" type="submit">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-      {{ 'Refresh Rankings' if has_results else 'Run AI Match' }}
-    </button>
-  </form>
+  <div style="display: flex; gap: 1rem;">
+    <!-- Refresh Button -->
+    <form method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}">
+      <button class="btn btn-ghost" type="submit">↻ Recalculate</button>
+    </form>
+    
+    <!-- CLEAR ALL DATA BUTTON -->
+    <!-- You will need a backend route to wipe the DB. For now it returns to step 1 -->
+    <a href="{{ url_for('upload.new_jd') }}" class="btn btn-danger" onclick="return confirm('This will wipe the current session. Start over?');">
+      🗑️ Clear Data & Start Over
+    </a>
+  </div>
 </div>
 
 {% if not has_results %}
-  <div class="card" style="text-align: center; padding: 5rem;">
-    <h3>No candidates scored yet</h3>
-    <p class="subtle">Click the button above to run the AI matching engine against your resume bank.</p>
+  <div class="card" style="text-align: center; padding: 5rem; border-color: var(--primary);">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">🧠</div>
+    <h3>Engine Ready</h3>
+    <p class="subtle">Data ingested. Hit recalculate above to rank the candidates.</p>
   </div>
 {% else %}
   
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-    <h2>Top Candidates</h2>
-    <input type="text" id="search-resumes" class="search-bar" placeholder="Search by name...">
-  </div>
-
+  <div style="display: grid; gap: 2rem;">
   {% for r in top_results %}
-    {% set score_int = r.final_score|round(0)|int %}
-    {% if score_int >= 90 %}{% set color_class = 'score-excellent' %}
-    {% elif score_int >= 75 %}{% set color_class = 'score-good' %}
-    {% elif score_int >= 60 %}{% set color_class = 'score-average' %}
-    {% else %}{% set color_class = 'score-poor' %}{% endif %}
+    {% set score = r.final_score|round(0)|int %}
+    {% if score >= 85 %}{% set ring = 'score-high' %}
+    {% elif score >= 60 %}{% set ring = 'score-mid' %}
+    {% else %}{% set ring = 'score-low' %}{% endif %}
 
     <article class="candidate-card">
       <div class="candidate-head">
-        <div class="candidate-info">
-          <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">RANK #{{ loop.index }}</div>
-          <h3 class="candidate-name">{{ r.resume.candidate_name }}</h3>
-          <div class="candidate-meta">
-            <span>{{ r.resume.total_experience_years|round(1) }} yrs experience</span>
-            {% if r.resume.email %}<span>&middot;</span><span>{{ r.resume.email }}</span>{% endif %}
-          </div>
+        <div>
+          <div style="color: var(--accent); font-family: var(--font-mono); font-size: 0.85rem;">// RANK 0{{ loop.index }}</div>
+          <h2 style="margin: 0.25rem 0;">{{ r.resume.candidate_name }}</h2>
+          <div class="subtle">{{ r.resume.total_experience_years|round(1) }} YOE • {{ r.resume.email }}</div>
         </div>
-        
-        <div style="display: flex; gap: 1rem; align-items: center;">
-          <!-- 
-            Note for Delete Functionality: 
-            If you create the Flask route `/api/resume/delete/<id>`, you can uncomment the button below. 
-            <form action="/api/resume/delete/{{ r.resume.id }}" method="POST" onsubmit="return confirm('Delete this resume?');"><button class="btn btn-ghost btn-danger">Delete</button></form>
-          -->
-          <div class="score-badge {{ color_class }}">
-            {{ score_int }}<span style="font-size: 0.7rem; font-weight: normal; margin-top: -4px;">/100</span>
-          </div>
-        </div>
+        <div class="score-badge {{ ring }}">{{ score }}</div>
       </div>
 
-      <div style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius-sm); margin-top: 1rem;">
+      <!-- AI Score Breakdown -->
+      <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1.5rem; margin-top: 0.5rem;">
         {% for key, value in r.score_breakdown.sub_scores.items() %}
-          <div class="ledger-row">
-            <span style="font-weight: 500;">{{ FACTOR_LABELS.get(key, key) }}</span>
-            <div class="progress-track">
-              <div class="progress-fill fill-blue" data-width="{{ (value * 100)|round(0)|int }}"></div>
-            </div>
-            <span style="text-align: right; font-weight: 600;">{{ (value * 100)|round(0)|int }}%</span>
+          <div style="display: grid; grid-template-columns: 120px 1fr 40px; gap: 1.5rem; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">{{ FACTOR_LABELS.get(key, key) }}</span>
+            <div class="progress-track"><div class="progress-fill" data-width="{{ (value * 100)|round(0)|int }}"></div></div>
+            <span style="font-family: var(--font-mono); font-size: 0.9rem; text-align: right;">{{ (value * 100)|round(0)|int }}%</span>
           </div>
         {% endfor %}
       </div>
 
       {% if r.xai_summary %}
-        <div style="margin-top: 1.5rem;">
-          <h4 style="margin-bottom: 0.5rem;">AI Assessment</h4>
-          <p class="subtle">{{ r.xai_summary.reasoning }}</p>
+        <div style="margin-top: 1rem; border-top: 1px solid var(--border-light); padding-top: 1.5rem;">
+          <h4 style="color: var(--primary); margin-bottom: 0.5rem;">AI Audit Summary</h4>
+          <p style="font-size: 0.95rem; color: #D4D4D8;">{{ r.xai_summary.reasoning }}</p>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
             <div>
-              <h5 style="margin-bottom: 0.5rem;">Strengths</h5>
+              <h5 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.8rem;">Verified Strengths</h5>
               {% for s in r.xai_summary.strengths %}<div class="chip matched">{{ s }}</div>{% endfor %}
             </div>
             <div>
-              <h5 style="margin-bottom: 0.5rem;">Skill Gaps</h5>
+              <h5 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.8rem;">Identified Gaps</h5>
               {% if r.xai_summary.skill_gaps %}
                 {% for g in r.xai_summary.skill_gaps %}<div class="chip missing">{{ g }}</div>{% endfor %}
               {% else %}
-                <span class="subtle">No notable gaps.</span>
+                <span class="subtle" style="font-size: 0.85rem;">No notable gaps detected.</span>
               {% endif %}
             </div>
           </div>
@@ -97,5 +83,7 @@
       {% endif %}
     </article>
   {% endfor %}
+  </div>
+
 {% endif %}
 {% endblock %}

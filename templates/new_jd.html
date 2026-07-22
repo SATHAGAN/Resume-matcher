@@ -1,30 +1,33 @@
 {% extends "base.html" %}
-{% block title %}Upload JD | Evidence Desk{% endblock %}
+{% block title %}Step 1: Target Profile{% endblock %}
 {% block content %}
 
-<div style="max-width: 600px; margin: 0 auto;">
-  <h1 style="text-align: center; margin-bottom: 0.5rem;">Add Job Description</h1>
-  <p class="subtle" style="text-align: center; margin-bottom: 2.5rem;">Upload a document or paste the text directly.</p>
+<div style="max-width: 700px; margin: 0 auto;">
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <div class="subtle" style="text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; color: var(--accent);">Step 1 of 3</div>
+    <h1>Define Target Profile</h1>
+    <p class="subtle">Upload or paste the Job Description to calibrate the AI model.</p>
+  </div>
 
   <div class="card">
     <form method="post" enctype="multipart/form-data">
       <div class="field">
-        <label for="jd_file">Upload Document (.pdf, .docx)</label>
+        <label>Provide JD Document</label>
         <div class="file-drop">
           <input type="file" id="jd_file" name="jd_file" accept=".pdf,.docx">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="margin-bottom: 10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          <div class="subtle">Drag & drop or click to browse</div>
+          <div style="font-size: 2rem; margin-bottom: 1rem;">📄</div>
+          <div>Drag & drop JD file here</div>
         </div>
       </div>
 
-      <div style="text-align: center; margin: 1.5rem 0; color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">OR</div>
+      <div style="text-align: center; margin: 2rem 0; color: var(--border-light);">— OR —</div>
 
       <div class="field">
-        <label for="raw_text">Paste Text</label>
-        <textarea id="raw_text" name="raw_text" rows="6" placeholder="Paste job requirements here..."></textarea>
+        <label>Raw Requirements</label>
+        <textarea id="raw_text" name="raw_text" rows="5" placeholder="Paste the exact skills and requirements here..."></textarea>
       </div>
 
-      <button class="btn" type="submit" style="width: 100%; padding: 0.75rem; font-size: 1rem;">Process Job Description</button>
+      <button class="btn" type="submit" style="width: 100%;">Initialize Model & Continue →</button>
     </form>
   </div>
 </div>

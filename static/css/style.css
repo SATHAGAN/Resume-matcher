@@ -1,37 +1,35 @@
 /* ===========================================================
-   Enterprise AI Resume Matcher — Modern SaaS UI
-   Vercel/Stripe aesthetic: White cards, soft shadows, 
-   blue primary, clean typography, glassmorphism hints.
+   Evidence Desk — Futuristic AI Dark Theme
+   Deep backgrounds, neon accents, glass panels.
    =========================================================== */
 :root {
-  --bg-main: #F8FAFC;
-  --card-bg: #FFFFFF;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --border-light: #E2E8F0;
+  --bg-main: #09090B; /* Deep Space Black */
+  --card-bg: #18181B; /* Dark Gray Card */
+  --card-hover: #27272A;
+  --border-light: #3F3F46;
   
-  /* Modern SaaS Colors */
-  --primary: #2563EB;
-  --primary-hover: #1D4ED8;
-  --primary-light: #DBEAFE;
+  --text-main: #FAFAFA;
+  --text-muted: #A1A1AA;
   
-  --success: #22C55E;
-  --success-light: #DCFCE7;
+  /* AI Futuristic Accents */
+  --primary: #8B5CF6; /* Neon Violet */
+  --primary-hover: #A78BFA;
+  --primary-glow: rgba(139, 92, 246, 0.4);
+  
+  --accent: #06B6D4; /* Cyan */
+  
+  --success: #10B981; /* Emerald */
+  --success-glow: rgba(16, 185, 129, 0.2);
   --warning: #F59E0B;
-  --warning-light: #FEF3C7;
   --danger: #EF4444;
-  --danger-light: #FEE2E2;
+  --danger-glow: rgba(239, 68, 68, 0.2);
 
-  --font-display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   
-  --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 16px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --radius-lg: 20px;
 }
 
 * { box-sizing: border-box; }
@@ -39,174 +37,107 @@
 body {
   margin: 0;
   background: var(--bg-main);
+  background-image: radial-gradient(circle at 50% 0%, var(--card-hover) 0%, transparent 70%);
   color: var(--text-main);
   font-family: var(--font-body);
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
-a:hover { color: var(--primary-hover); }
+a { color: var(--accent); text-decoration: none; transition: 0.2s; }
+a:hover { color: #67E8F9; text-shadow: 0 0 8px var(--accent); }
 
-/* ---------------- Layout & Header ---------------- */
+/* ---------------- Header & Steps ---------------- */
 .site-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2.5rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
+  padding: 1.25rem 2.5rem;
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-light);
   position: sticky;
   top: 0;
   z-index: 100;
 }
-.brand {
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.brand-mark { color: var(--primary); font-size: 1.5rem; }
-.site-nav { display: flex; gap: 1.5rem; font-weight: 500; font-size: 0.95rem; }
-.site-nav a { color: var(--text-muted); }
-.site-nav a:hover { color: var(--text-main); }
+.brand { font-weight: 700; font-size: 1.25rem; color: #FFF; display: flex; align-items: center; gap: 0.75rem; letter-spacing: 1px; }
+.brand-mark { background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; color: transparent; font-size: 1.5rem; }
 
-.page { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem 5rem; }
-
-/* ---------------- Components ---------------- */
-h1, h2, h3 { font-family: var(--font-display); font-weight: 700; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
-h1 { font-size: 2.25rem; }
-h2 { font-size: 1.5rem; }
-.subtle { color: var(--text-muted); font-size: 1rem; }
+/* ---------------- Layout & Cards ---------------- */
+.page { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; margin: 0 0 0.5rem; }
+h1 { font-size: 2.5rem; background: linear-gradient(to right, #FFF, #A1A1AA); -webkit-background-clip: text; color: transparent; }
+.subtle { color: var(--text-muted); }
 
 .card {
   background: var(--card-bg);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 2rem;
-  box-shadow: var(--shadow-md);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 500;
-  font-size: 0.95rem;
-  padding: 0.6rem 1.25rem;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: var(--primary);
-  color: #fff !important;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: var(--shadow-sm);
-}
-.btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
-.btn-ghost { background: transparent; color: var(--text-main) !important; border: 1px solid var(--border-light); box-shadow: none; }
-.btn-ghost:hover { background: var(--bg-main); border-color: var(--text-muted); }
-.btn-danger { background: var(--danger); }
-.btn-danger:hover { background: #DC2626; }
-
-/* ---------------- Flash & Toasts ---------------- */
-.flash-stack { margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.75rem; }
-.flash {
-  padding: 1rem 1.25rem;
-  border-radius: var(--radius-md);
-  font-size: 0.95rem;
-  font-weight: 500;
-  animation: slideIn 0.3s ease-out forwards;
-}
-.flash-success { background: var(--success-light); color: #166534; border-left: 4px solid var(--success); }
-.flash-error { background: var(--danger-light); color: #991B1B; border-left: 4px solid var(--danger); }
-
-@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ---------------- Forms & Drag/Drop ---------------- */
-.field { margin-bottom: 1.5rem; }
-.field label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-main); }
-.field textarea, .field input[type="text"] {
-  width: 100%;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-.file-drop {
-  border: 2px dashed var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 3rem 2rem;
-  text-align: center;
-  background: var(--bg-main);
-  transition: all 0.2s ease;
-  cursor: pointer;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   position: relative;
+  overflow: hidden;
 }
-.file-drop:hover, .file-drop.dragover { border-color: var(--primary); background: var(--primary-light); }
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.5;
+}
+
+/* ---------------- Buttons ---------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 0.95rem; padding: 0.75rem 1.5rem;
+  border-radius: 8px; border: none; cursor: pointer; transition: 0.3s;
+  background: var(--primary); color: #FFF !important;
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+.btn:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 0 25px var(--primary-glow); }
+.btn-ghost { background: transparent; border: 1px solid var(--border-light); box-shadow: none; }
+.btn-ghost:hover { background: var(--card-hover); border-color: var(--text-main); }
+.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger) !important; border: 1px solid var(--danger); box-shadow: 0 0 10px var(--danger-glow); }
+.btn-danger:hover { background: var(--danger); color: #FFF !important; box-shadow: 0 0 20px var(--danger-glow); }
+
+/* ---------------- Forms & Uploads ---------------- */
+.field { margin-bottom: 2rem; }
+.field label { display: block; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
+.field textarea {
+  width: 100%; padding: 1rem; border: 1px solid var(--border-light); border-radius: 8px;
+  background: #09090B; color: #FFF; font-family: var(--font-body); resize: vertical; transition: 0.3s;
+}
+.field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+
+.file-drop {
+  border: 2px dashed var(--border-light); border-radius: 12px; padding: 4rem 2rem;
+  text-align: center; background: #09090B; transition: 0.3s; position: relative; cursor: pointer;
+}
+.file-drop:hover { border-color: var(--accent); background: rgba(6, 182, 212, 0.05); }
 .file-drop input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-/* ---------------- Dashboard Ranking Cards ---------------- */
-.dashboard-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
-.search-bar { width: 300px; padding: 0.6rem 1rem; border-radius: 20px; border: 1px solid var(--border-light); }
+/* ---------------- AI Dashboard ---------------- */
+.dashboard-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 2rem; }
 
 .candidate-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s ease;
+  background: var(--card-bg); border: 1px solid var(--border-light); border-radius: var(--radius-md);
+  padding: 1.5rem; margin-bottom: 1.25rem; transition: 0.3s; display: flex; flex-direction: column; gap: 1rem;
 }
-.candidate-card:hover { box-shadow: var(--shadow-hover); }
+.candidate-card:hover { border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
 
-.candidate-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.candidate-info h3 { margin: 0; font-size: 1.25rem; }
-.candidate-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 1rem; margin-top: 0.25rem; }
-
-/* Animated Score Ring */
+.candidate-head { display: flex; justify-content: space-between; align-items: center; }
 .score-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: white;
-  box-shadow: var(--shadow-md);
+  width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; font-weight: 700; color: #FFF; border: 2px solid; position: relative;
 }
-.score-excellent { background: linear-gradient(135deg, var(--success), #16a34a); }
-.score-good { background: linear-gradient(135deg, var(--primary), #3b82f6); }
-.score-average { background: linear-gradient(135deg, var(--warning), #d97706); }
-.score-poor { background: linear-gradient(135deg, var(--danger), #dc2626); }
+.score-high { border-color: var(--success); box-shadow: 0 0 20px var(--success-glow); text-shadow: 0 0 10px var(--success); }
+.score-mid { border-color: var(--warning); box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+.score-low { border-color: var(--danger); box-shadow: 0 0 20px var(--danger-glow); }
 
-/* Progress Bars */
-.ledger-row { display: grid; grid-template-columns: 1fr 2fr 50px; gap: 1rem; align-items: center; margin-bottom: 0.75rem; font-size: 0.9rem; }
-.progress-track { width: 100%; height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 4px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); width: 0; }
-.fill-blue { background: var(--primary); }
+.progress-track { width: 100%; height: 6px; background: #27272A; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--primary)); border-radius: 3px; transition: 1.5s ease-out; width: 0; }
 
 .chip {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 99px;
-  background: var(--bg-main);
-  color: var(--text-muted);
-  border: 1px solid var(--border-light);
-  margin: 0.2rem;
+  display: inline-block; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 99px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); margin: 0.2rem;
 }
-.chip.matched { background: var(--success-light); color: #166534; border-color: #bbf7d0; }
-.chip.missing { background: var(--danger-light); color: #991b1b; border-color: #fecaca; }
+.chip.matched { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: var(--success); }
+.chip.missing { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: var(--danger); }

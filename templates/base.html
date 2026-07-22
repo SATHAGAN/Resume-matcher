@@ -3,78 +3,49 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}AI Resume Matcher{% endblock %}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>{% block title %}AI Matcher Workspace{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="{{ url_for('match.home') }}">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="brand-mark"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Evidence Desk
+      <span class="brand-mark">⚡</span> EVIDENCE DESK
     </a>
-    <nav class="site-nav">
-      <a href="{{ url_for('upload.new_jd') }}">Upload Job</a>
-      <a href="{{ url_for('upload.new_resume') }}">Upload Resumes</a>
-    </nav>
+    <!-- Linear Navigation Flow -->
+    <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
+      <span>1. JD</span>
+      <span>→</span>
+      <span>2. Resumes</span>
+      <span>→</span>
+      <span style="color: var(--primary); font-weight: 600;">3. Match Engine</span>
+    </div>
   </header>
 
   <main class="page">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="flash-stack" id="toast-container">
-          {% for category, message in messages %}
-            <div class="flash flash-{{ category }}">{{ message }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
     {% block content %}{% endblock %}
   </main>
 
   <script>
-    // JS for Animated Progress Bars
     document.addEventListener("DOMContentLoaded", function() {
+      // Animate progress bars
       setTimeout(() => {
-        const bars = document.querySelectorAll('.progress-fill');
-        bars.forEach(bar => {
-          const targetWidth = bar.getAttribute('data-width');
-          bar.style.width = targetWidth + '%';
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+          bar.style.width = bar.getAttribute('data-width') + '%';
         });
-      }, 100);
+      }, 200);
 
-      // JS for Drag and Drop File Names
-      const fileInputs = document.querySelectorAll('input[type="file"]');
-      fileInputs.forEach(input => {
+      // File upload visual feedback
+      document.querySelectorAll('input[type="file"]').forEach(input => {
         input.addEventListener('change', function(e) {
-          const dropZone = this.parentElement;
-          const textDisplay = dropZone.querySelector('.subtle');
+          const textDisplay = this.parentElement.querySelector('div');
           if(this.files.length > 1) {
-            textDisplay.innerHTML = `<strong>${this.files.length} files selected</strong>`;
+            textDisplay.innerHTML = `<span style="color: var(--accent); font-weight: 600;">${this.files.length} files staged for AI analysis</span>`;
           } else if (this.files.length === 1) {
-            textDisplay.innerHTML = `<strong>${this.files[0].name}</strong>`;
+            textDisplay.innerHTML = `<span style="color: var(--accent); font-weight: 600;">${this.files[0].name} staged</span>`;
           }
         });
       });
-
-      // JS for Search Filtering
-      const searchInput = document.getElementById('search-resumes');
-      if(searchInput) {
-        searchInput.addEventListener('keyup', function(e) {
-          const term = e.target.value.toLowerCase();
-          const cards = document.querySelectorAll('.candidate-card');
-          cards.forEach(card => {
-            const name = card.querySelector('.candidate-name').innerText.toLowerCase();
-            if(name.includes(term)) {
-              card.style.display = 'block';
-            } else {
-              card.style.display = 'none';
-            }
-          });
-        });
-      }
     });
   </script>
 </body>
