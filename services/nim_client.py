@@ -43,7 +43,7 @@ def chat_completion(messages, model=None, temperature=0.2, max_tokens=2048, json
     (use extract_json below - some NIM-hosted models ignore response_format
     and wrap output in markdown fences anyway).
     """
-    base_url = current_app.config["NVIDIA_BASE_URL"]
+    base_url = "https://integrate.api.nvidia.com/v1"
     payload = {
         "model": model or current_app.config["NVIDIA_CHAT_MODEL"],
         "messages": messages,
