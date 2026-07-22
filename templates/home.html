@@ -1,49 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Evidence Desk{% endblock %}
+{% block title %}Dashboard | Evidence Desk{% endblock %}
 {% block content %}
 
-<section class="hero">
-  <div class="eyebrow">Evidence-based matching</div>
-  <h1>Match on demonstrated skill, not keyword count.</h1>
-  <p class="subtle">
-    Upload a job description and a bank of resumes. Every candidate is scored against
-    the exact requirements using their extracted project history &mdash; not just the
-    words on the page &mdash; then explained by an AI audit before it reaches you.
-  </p>
-
-  <div class="hero-grid">
-    <div class="panel">
-      <h2>Job Descriptions</h2>
-      {% if jds %}
-        <ul class="jd-list">
-          {% for jd in jds %}
-            <li>
-              <div>
-                <strong>{{ jd.title }}</strong>
-                <div class="jd-meta">{{ jd.domain }} &middot; {{ jd.experience_level }} &middot; {{ jd.required_skills|length }} required skills</div>
-              </div>
-              <a class="btn btn-ghost" href="{{ url_for('match.dashboard', jd_id=jd.id) }}">Open dashboard &rarr;</a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <div class="empty-state">No job descriptions yet.</div>
-      {% endif %}
-      <div style="margin-top: 1.25rem;">
-        <a class="btn" href="{{ url_for('upload.new_jd') }}">+ New job description</a>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Resume Bank</h2>
-      <div class="stat-row"><span>Candidates on file</span> <span class="stat-value">{{ resume_count }}</span></div>
-      <div class="stat-row"><span>Embedding model</span> <span class="stat-value">nv-embedqa-e5-v5</span></div>
-      <div class="stat-row"><span>Extraction / XAI model</span> <span class="stat-value">NIM chat</span></div>
-      <div style="margin-top: 1.25rem;">
-        <a class="btn" href="{{ url_for('upload.new_resume') }}">+ Add resumes</a>
-      </div>
-    </div>
+<div class="dashboard-header">
+  <div>
+    <h1>Workspace Overview</h1>
+    <p class="subtle">AI-powered candidate ranking and extraction.</p>
   </div>
-</section>
+  <div style="display: flex; gap: 1rem;">
+    <a class="btn btn-ghost" href="{{ url_for('upload.new_resume') }}">Add Resumes</a>
+    <a class="btn" href="{{ url_for('upload.new_jd') }}">Create Job Description</a>
+  </div>
+</div>
 
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+  <div class="card">
+    <div class="subtle">Total Resumes</div>
+    <div style="font-size: 2.5rem; font-weight: 700;">{{ resume_count }}</div>
+  </div>
+  <div class="card">
+    <div class="subtle">Active Jobs</div>
+    <div style="font-size: 2.5rem; font-weight: 700;">{{ jds|length if jds else 0 }}</div>
+  </div>
+</div>
+
+<h2>Active Job Requirements</h2>
+{% if jds %}
+  <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+    {% for jd in jds %}
+      <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem;">
+        <div>
+          <h3 style="margin:0;">{{ jd.title }}</h3>
+          <p class="subtle" style="margin: 0.25rem 0 0 0;">{{ jd.domain }} &middot; {{ jd.experience_level }}</p>
+        </div>
+        <a class="btn btn-ghost" href="{{ url_for('match.dashboard', jd_id=jd.id) }}">View Rankings &rarr;</a>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card" style="text-align: center; padding: 4rem 2rem;">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin-bottom:1rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+    <h3>No job descriptions yet</h3>
+    <p class="subtle">Upload a JD to start matching candidates.</p>
+  </div>
+{% endif %}
 {% endblock %}

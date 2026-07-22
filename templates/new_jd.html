@@ -1,29 +1,31 @@
 {% extends "base.html" %}
-{% block title %}New Job Description{% endblock %}
+{% block title %}Upload JD | Evidence Desk{% endblock %}
 {% block content %}
 
-<div class="eyebrow">Step 1 &middot; Ingestion</div>
-<h1>Add a job description</h1>
-<p class="subtle">Paste the JD text below, or upload a .pdf / .docx. It will be run through
-  NIM to extract required vs. preferred skills, seniority, and domain.</p>
+<div style="max-width: 600px; margin: 0 auto;">
+  <h1 style="text-align: center; margin-bottom: 0.5rem;">Add Job Description</h1>
+  <p class="subtle" style="text-align: center; margin-bottom: 2.5rem;">Upload a document or paste the text directly.</p>
 
-<form class="form-card" method="post" enctype="multipart/form-data" style="margin-top: 1.5rem;">
-  <div class="field">
-    <label for="raw_text">Paste job description text</label>
-    <textarea id="raw_text" name="raw_text" placeholder="Paste the full job description here&hellip;"></textarea>
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      <div class="field">
+        <label for="jd_file">Upload Document (.pdf, .docx)</label>
+        <div class="file-drop">
+          <input type="file" id="jd_file" name="jd_file" accept=".pdf,.docx">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="margin-bottom: 10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <div class="subtle">Drag & drop or click to browse</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin: 1.5rem 0; color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">OR</div>
+
+      <div class="field">
+        <label for="raw_text">Paste Text</label>
+        <textarea id="raw_text" name="raw_text" rows="6" placeholder="Paste job requirements here..."></textarea>
+      </div>
+
+      <button class="btn" type="submit" style="width: 100%; padding: 0.75rem; font-size: 1rem;">Process Job Description</button>
+    </form>
   </div>
-
-  <div class="divider">or</div>
-
-  <div class="field">
-    <label for="jd_file">Upload a file</label>
-    <div class="file-drop">
-      <input type="file" id="jd_file" name="jd_file" accept=".pdf,.docx">
-      <div class="subtle" style="margin-top:0.4rem;">.pdf or .docx</div>
-    </div>
-  </div>
-
-  <button class="btn" type="submit">Extract &amp; save</button>
-</form>
-
+</div>
 {% endblock %}
