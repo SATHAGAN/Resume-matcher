@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}AI Matcher Workspace{% endblock %}</title>
+  <title>{% block title %}Resume Matcher Workspace{% endblock %}</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="{{ url_for('match.home') }}">
-      <span class="brand-mark">⚡</span> EVIDENCE DESK
+      <!-- Changed from Evidence Desk to Resume Matcher -->
+      <span class="brand-mark">⚡</span> RESUME MATCHER
     </a>
-    <!-- Linear Navigation Flow -->
     <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
       <span>1. JD</span>
       <span>→</span>
@@ -25,22 +25,20 @@
   <main class="page">
     {% block content %}{% endblock %}
   </main>
-
+  
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      // Animate progress bars
       setTimeout(() => {
         document.querySelectorAll('.progress-fill').forEach(bar => {
           bar.style.width = bar.getAttribute('data-width') + '%';
         });
       }, 200);
 
-      // File upload visual feedback
       document.querySelectorAll('input[type="file"]').forEach(input => {
         input.addEventListener('change', function(e) {
-          const textDisplay = this.parentElement.querySelector('div');
+          const textDisplay = this.parentElement.querySelector('div:last-child');
           if(this.files.length > 1) {
-            textDisplay.innerHTML = `<span style="color: var(--accent); font-weight: 600;">${this.files.length} files staged for AI analysis</span>`;
+            textDisplay.innerHTML = `<span style="color: var(--accent); font-weight: 600;">${this.files.length} files staged</span>`;
           } else if (this.files.length === 1) {
             textDisplay.innerHTML = `<span style="color: var(--accent); font-weight: 600;">${this.files[0].name} staged</span>`;
           }

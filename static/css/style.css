@@ -141,3 +141,14 @@ h1 { font-size: 2.5rem; background: linear-gradient(to right, #FFF, #A1A1AA); -w
 }
 .chip.matched { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: var(--success); }
 .chip.missing { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: var(--danger); }
+.btn-outline-danger {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger) !important;
+  transition: 0.3s;
+}
+.btn-outline-danger:hover {
+  background: var(--danger);
+  color: #FFF !important;
+  box-shadow: 0 0 15px var(--danger-glow);
+}
