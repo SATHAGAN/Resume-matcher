@@ -2,6 +2,28 @@
 {% block title %}Rankings | {{ jd.title }}{% endblock %}
 {% block content %}
 
+<!-- Custom Styles for Elite Hover Effects -->
+<style>
+  .candidate-row {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+  }
+  .candidate-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(124, 58, 237, 0.4);
+    box-shadow: 0 0 25px rgba(124, 58, 237, 0.1);
+    transform: translateY(-2px);
+  }
+  .chevron-icon {
+    transition: transform 0.3s ease;
+    color: var(--text-muted);
+  }
+  .candidate-row:hover .chevron-icon {
+    color: var(--primary);
+  }
+</style>
+
 <!-- ELITE HEADER SECTION -->
 <div class="dashboard-top" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
   <div>
@@ -33,181 +55,206 @@
 <!-- SMART DASHBOARD EMPTY STATES -->
 {% if not has_results %}
   
-  {% if resume_count == 0 %}
-    <div class="card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed rgba(124, 58, 237, 0.3); background: rgba(124, 58, 237, 0.02);">
-      <div style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.8;">📂</div>
-      <h3 style="margin-bottom: 0.5rem;">Inject Candidate Data</h3>
-      <p class="subtle" style="max-width: 400px; margin: 0 auto 2rem auto; font-size: 0.9rem;">
-        The parameters for <strong>{{ jd.title }}</strong> are locked in. Upload your batch of resumes to initiate the AI ranking sequence.
-      </p>
-      <a href="{{ url_for('upload.new_resume', jd_id=jd.id) }}" class="btn" style="padding: 0.8rem 2rem; font-size: 0.9rem; letter-spacing: 0.5px;">
-        Upload Resumes
-      </a>
-    </div>
+  <div style="max-width: 800px; margin: 0 auto;">
+    {% if resume_count == 0 %}
+      <div class="card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed rgba(124, 58, 237, 0.3); background: rgba(124, 58, 237, 0.02);">
+        <div style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.8;">📂</div>
+        <h3 style="margin-bottom: 0.5rem;">Inject Candidate Data</h3>
+        <p class="subtle" style="max-width: 400px; margin: 0 auto 2rem auto; font-size: 0.9rem;">
+          The parameters for <strong>{{ jd.title }}</strong> are locked in. Upload your batch of resumes to initiate the AI ranking sequence.
+        </p>
+        <a href="{{ url_for('upload.new_resume', jd_id=jd.id) }}" class="btn" style="padding: 0.8rem 2rem; font-size: 0.9rem; letter-spacing: 0.5px;">
+          Upload Resumes
+        </a>
+      </div>
 
-  {% else %}
-    <div class="card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.02);">
-      <div style="font-size: 2.5rem; margin-bottom: 1rem; animation: pulseGlow 2s infinite;">🧠</div>
-      <h3 style="margin-bottom: 0.5rem;">Synthesizing AI Rankings</h3>
-      <p class="subtle" style="max-width: 400px; margin: 0 auto 1.5rem auto; font-size: 0.9rem;">
-        Cross-referencing candidate parameters against role requirements. Please hold.
-      </p>
-      
-      <form id="auto-run-form" method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}" style="display: none;">
-        <button type="submit">Run</button>
-      </form>
-      <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          document.getElementById('auto-run-form').submit();
-        });
-      </script>
-    </div>
-  {% endif %}
+    {% else %}
+      <div class="card" style="text-align: center; padding: 4rem 2rem; border: 1px dashed rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.02);">
+        <div style="font-size: 2.5rem; margin-bottom: 1rem; animation: pulseGlow 2s infinite;">🧠</div>
+        <h3 style="margin-bottom: 0.5rem;">Synthesizing AI Rankings</h3>
+        <p class="subtle" style="max-width: 400px; margin: 0 auto 1.5rem auto; font-size: 0.9rem;">
+          Cross-referencing candidate parameters against role requirements. Please hold.
+        </p>
+        
+        <form id="auto-run-form" method="post" action="{{ url_for('match.run_match', jd_id=jd.id) }}" style="display: none;">
+          <button type="submit">Run</button>
+        </form>
+        <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById('auto-run-form').submit();
+          });
+        </script>
+      </div>
+    {% endif %}
+  </div>
 
 {% else %}
 
-  <!-- THE OUTPUT: EXPANDABLE COMPACT CANDIDATE LIST -->
-  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-  {% for r in top_results %}
-    {% set score = r.final_score|round(0)|int %}
-    {% if score >= 85 %}{% set ring = 'score-high' %}
-    {% elif score >= 60 %}{% set ring = 'score-mid' %}
-    {% else %}{% set ring = 'score-low' %}{% endif %}
+  <!-- FIXED WIDTH WRAPPER (Centers and shrinks the width of the cards) -->
+  <div style="max-width: 950px; margin: 0 auto;">
 
-    <article class="card" style="padding: 0; overflow: hidden; border-radius: var(--radius-md);">
-      
-      <!-- COMPACT COLLAPSED VIEW (Clickable Header) -->
-      <div class="candidate-header" onclick="toggleDetails('details-{{ loop.index }}')" style="padding: 1.25rem 1.75rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+    <!-- THE OUTPUT: EXPANDABLE COMPACT CANDIDATE LIST -->
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+    {% for r in top_results %}
+      {% set score = r.final_score|round(0)|int %}
+      {% if score >= 85 %}{% set ring = 'score-high' %}
+      {% elif score >= 60 %}{% set ring = 'score-mid' %}
+      {% else %}{% set ring = 'score-low' %}{% endif %}
+
+      <article class="card candidate-row" style="padding: 0; overflow: hidden; border-radius: var(--radius-md);">
         
-        <!-- Left Side: Rank, Name, Details -->
-        <div style="display: flex; flex-direction: column; justify-content: center;">
-          <span style="display: inline-block; width: max-content; padding: 2px 10px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; color: #A78BFA; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">
-            ✦ RANK {{ loop.index }}
-          </span>
-          <h2 style="margin: 0 0 0.25rem 0; font-size: 1.35rem; color: #FFFFFF;">{{ r.resume.candidate_name }}</h2>
-          <div class="subtle" style="display: flex; gap: 0.75rem; align-items: center; font-size: 0.85rem;">
-            <span style="color: #FFFFFF; font-weight: 700;">{{ r.resume.total_experience_years|round(1) }} <span style="font-weight: 400; color: var(--text-muted);">YOE</span></span>
-            <span style="color: var(--border-color);">|</span>
-            <span>{{ r.resume.email }}</span>
+        <!-- COMPACT COLLAPSED VIEW (Clickable Header) -->
+        <div class="candidate-header" onclick="toggleDetails('details-{{ loop.index }}', 'chevron-{{ loop.index }}')" style="padding: 1.25rem 1.75rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+          
+          <!-- Left Side: Rank, Name, Details -->
+          <div style="display: flex; flex-direction: column; justify-content: center;">
+            <span style="display: inline-block; width: max-content; padding: 2px 10px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 20px; color: #A78BFA; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">
+              ✦ RANK {{ loop.index }}
+            </span>
+            <h2 style="margin: 0 0 0.25rem 0; font-size: 1.35rem; color: #FFFFFF;">{{ r.resume.candidate_name }}</h2>
+            <div class="subtle" style="display: flex; gap: 0.75rem; align-items: center; font-size: 0.85rem; flex-wrap: wrap;">
+              <span style="color: #FFFFFF; font-weight: 700;">{{ r.resume.total_experience_years|round(1) }} <span style="font-weight: 400; color: var(--text-muted);">YOE</span></span>
+              <span style="color: var(--border-color);">|</span>
+              <span>{{ r.resume.email }}</span>
+              <span style="color: var(--border-color);">|</span>
+              
+              <!-- Quick Context Glass Badge -->
+              <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; color: var(--text-secondary);">
+                Elite Match Potential
+              </span>
+            </div>
           </div>
-        </div>
-        
-        <!-- Right Side: Compact Score Ring -->
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem;">
-          <span style="font-size: 0.6rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
-            Match Score
-          </span>
-          <!-- Dynamic Score Ring Resized -->
-          <div class="score-badge {{ ring }}" style="width: 55px; height: 55px; font-size: 1.25rem; background: transparent; border-width: 2px;">
-            {{ score }}
-          </div>
-        </div>
-
-      </div>
-
-      <!-- EXPANDED VIEW (Hidden by default, shown on click) -->
-      <div id="details-{{ loop.index }}" style="display: none; border-top: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.25);">
-        
-        <div style="padding: 2rem;">
-          <!-- ONE-BY-ONE METRICS DASHBOARD -->
-          <div style="margin-bottom: 2.5rem;">
-            <h5 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; margin-bottom: 1.25rem;">Performance Metrics</h5>
+          
+          <!-- Right Side: Score Ring + Animated Chevron -->
+          <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem;">
+              <span style="font-size: 0.6rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                Match Score
+              </span>
+              <div class="score-badge {{ ring }}" style="width: 55px; height: 55px; font-size: 1.25rem; background: transparent; border-width: 2px;">
+                {{ score }}
+              </div>
+            </div>
             
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-              {% for key, value in r.score_breakdown.sub_scores.items() %}
-                <div style="display: grid; grid-template-columns: 150px 1fr 50px; gap: 1.5rem; align-items: center;">
-                  <span style="font-size: 0.8rem; color: var(--text-primary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">{{ key|replace('_', ' ')|title }}</span>
-                  <div class="progress-track" style="margin: 0; height: 6px; background: rgba(255,255,255,0.05);">
-                    <div class="progress-fill" style="width: {{ (value * 100)|round(0)|int }}%;"></div>
-                  </div>
-                  <span style="font-family: var(--font-sans); font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; text-align: right;">{{ (value * 100)|round(0)|int }}%</span>
-                </div>
-              {% endfor %}
+            <!-- The Dropdown Arrow -->
+            <div style="padding-left: 0.5rem; border-left: 1px solid var(--border-color);">
+              <svg id="chevron-{{ loop.index }}" class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
             </div>
           </div>
 
-          <!-- EXECUTIVE AI AUDIT -->
-          {% if r.xai_summary %}
-            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.75rem; position: relative; overflow: hidden;">
-              
-              <!-- Decorative Background Glow -->
-              <div style="position: absolute; top: -50px; right: -50px; width: 120px; height: 120px; background: var(--primary); filter: blur(70px); opacity: 0.15; border-radius: 50%;"></div>
+        </div>
 
-              <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                Executive AI Audit
-              </h4>
+        <!-- EXPANDED VIEW (Hidden by default, shown on click) -->
+        <div id="details-{{ loop.index }}" style="display: none; border-top: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.25);">
+          
+          <div style="padding: 2rem;">
+            <!-- ONE-BY-ONE METRICS DASHBOARD -->
+            <div style="margin-bottom: 2.5rem;">
+              <h5 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; margin-bottom: 1.25rem;">Performance Metrics</h5>
               
-              <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; border-left: 2px solid var(--primary); padding-left: 1rem; margin-bottom: 1.75rem;">
-                {{ r.xai_summary.reasoning }}
-              </p>
-              
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                <div>
-                  <h5 style="color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px;">Verified Strengths</h5>
-                  <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-                    {% for s in r.xai_summary.strengths %}<div class="chip matched" style="font-size: 0.7rem; padding: 0.3rem 0.75rem;">{{ s }}</div>{% endfor %}
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for key, value in r.score_breakdown.sub_scores.items() %}
+                  <div style="display: grid; grid-template-columns: 150px 1fr 50px; gap: 1.5rem; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--text-primary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">{{ key|replace('_', ' ')|title }}</span>
+                    <div class="progress-track" style="margin: 0; height: 6px; background: rgba(255,255,255,0.05);">
+                      <div class="progress-fill" style="width: {{ (value * 100)|round(0)|int }}%;"></div>
+                    </div>
+                    <span style="font-family: var(--font-sans); font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; text-align: right;">{{ (value * 100)|round(0)|int }}%</span>
                   </div>
-                </div>
-                <div>
-                  <h5 style="color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px;">Identified Gaps</h5>
-                  <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-                    {% if r.xai_summary.skill_gaps %}
-                      {% for g in r.xai_summary.skill_gaps %}<div class="chip missing" style="font-size: 0.7rem; padding: 0.3rem 0.75rem;">{{ g }}</div>{% endfor %}
-                    {% else %}
-                      <span class="subtle" style="font-size: 0.8rem; font-style: italic;">No notable gaps detected.</span>
-                    {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- EXECUTIVE AI AUDIT -->
+            {% if r.xai_summary %}
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.75rem; position: relative; overflow: hidden;">
+                
+                <!-- Decorative Background Glow -->
+                <div style="position: absolute; top: -50px; right: -50px; width: 120px; height: 120px; background: var(--primary); filter: blur(70px); opacity: 0.15; border-radius: 50%;"></div>
+
+                <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                  Executive AI Audit
+                </h4>
+                
+                <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; border-left: 2px solid var(--primary); padding-left: 1rem; margin-bottom: 1.75rem;">
+                  {{ r.xai_summary.reasoning }}
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                  <div>
+                    <h5 style="color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px;">Verified Strengths</h5>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                      {% for s in r.xai_summary.strengths %}<div class="chip matched" style="font-size: 0.7rem; padding: 0.3rem 0.75rem;">{{ s }}</div>{% endfor %}
+                    </div>
+                  </div>
+                  <div>
+                    <h5 style="color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px;">Identified Gaps</h5>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                      {% if r.xai_summary.skill_gaps %}
+                        {% for g in r.xai_summary.skill_gaps %}<div class="chip missing" style="font-size: 0.7rem; padding: 0.3rem 0.75rem;">{{ g }}</div>{% endfor %}
+                      {% else %}
+                        <span class="subtle" style="font-size: 0.8rem; font-style: italic;">No notable gaps detected.</span>
+                      {% endif %}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          {% endif %}
+            {% endif %}
+          </div>
+
         </div>
-
-      </div>
-    </article>
-  {% endfor %}
-  </div>
-
-  <!-- OTHER CANDIDATES DATA GRID -->
-  {% if other_results %}
-    <div style="margin-top: 3rem;">
-      <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 1.25rem;">Remaining Talent Pool</h3>
-      <div class="card" style="padding: 0; overflow: hidden;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left;">
-          <thead>
-            <tr style="background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid var(--border-color);">
-              <th style="padding: 1rem 1.25rem; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Candidate</th>
-              <th style="padding: 1rem 1.25rem; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Experience</th>
-              <th style="padding: 1rem 1.25rem; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; text-align: right;">AI Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for r in other_results %}
-              <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
-                <td style="padding: 1rem 1.25rem; font-weight: 500; color: var(--text-primary); font-size: 0.9rem;">{{ r.resume.candidate_name }}</td>
-                <td style="padding: 1rem 1.25rem; color: var(--text-secondary); font-size: 0.9rem;">{{ r.resume.total_experience_years|round(1) }} YOE</td>
-                <td style="padding: 1rem 1.25rem; color: var(--text-primary); font-weight: 600; text-align: right;">
-                  <span style="display: inline-block; padding: 3px 8px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
-                    {{ r.final_score|round(0)|int }}
-                  </span>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+      </article>
+    {% endfor %}
     </div>
-  {% endif %}
 
-  <!-- JavaScript to handle the Click-to-Expand functionality -->
+    <!-- OTHER CANDIDATES DATA GRID -->
+    {% if other_results %}
+      <div style="margin-top: 3rem;">
+        <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 1.25rem;">Remaining Talent Pool</h3>
+        <div class="card candidate-row" style="padding: 0; overflow: hidden;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid var(--border-color);">
+                <th style="padding: 1rem 1.25rem; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Candidate</th>
+                <th style="padding: 1rem 1.25rem; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Experience</th>
+                <th style="padding: 1rem 1.25rem; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; text-align: right;">AI Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in other_results %}
+                <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                  <td style="padding: 1rem 1.25rem; font-weight: 500; color: var(--text-primary); font-size: 0.9rem;">{{ r.resume.candidate_name }}</td>
+                  <td style="padding: 1rem 1.25rem; color: var(--text-secondary); font-size: 0.9rem;">{{ r.resume.total_experience_years|round(1) }} YOE</td>
+                  <td style="padding: 1rem 1.25rem; color: var(--text-primary); font-weight: 600; text-align: right;">
+                    <span style="display: inline-block; padding: 3px 8px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                      {{ r.final_score|round(0)|int }}
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+
+  </div> <!-- End of Max-Width Wrapper -->
+
+  <!-- JavaScript to handle the Click-to-Expand functionality & Chevron Rotation -->
   <script>
-    function toggleDetails(elementId) {
+    function toggleDetails(elementId, chevronId) {
       const detailsSection = document.getElementById(elementId);
+      const chevron = document.getElementById(chevronId);
+      
       if (detailsSection.style.display === "none" || detailsSection.style.display === "") {
         detailsSection.style.display = "block";
+        chevron.style.transform = "rotate(180deg)";
       } else {
         detailsSection.style.display = "none";
+        chevron.style.transform = "rotate(0deg)";
       }
     }
   </script>
