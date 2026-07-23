@@ -180,15 +180,25 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
                   <div>
                     <h5 style="color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px;">Verified Strengths</h5>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-                      {% for s in r.xai_summary.strengths %}<div class="chip matched" style="font-size: 0.7rem; padding: 0.3rem 0.75rem;">{{ s }}</div>{% endfor %}
+                    <!-- FIX: Side-by-side flex wrap, but square cards with left accent line -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                      {% for s in r.xai_summary.strengths %}
+                        <div class="chip matched" style="border-radius: 6px; border-left: 3px solid var(--success); padding: 0.5rem 0.8rem; font-size: 0.8rem; line-height: 1.5; white-space: normal; text-align: left;">
+                          {{ s }}
+                        </div>
+                      {% endfor %}
                     </div>
                   </div>
                   <div>
                     <h5 style="color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px;">Identified Gaps</h5>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    <!-- FIX: Side-by-side flex wrap, but square cards with left accent line -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                       {% if r.xai_summary.skill_gaps %}
-                        {% for g in r.xai_summary.skill_gaps %}<div class="chip missing" style="font-size: 0.7rem; padding: 0.3rem 0.75rem;">{{ g }}</div>{% endfor %}
+                        {% for g in r.xai_summary.skill_gaps %}
+                          <div class="chip missing" style="border-radius: 6px; border-left: 3px solid var(--danger); padding: 0.5rem 0.8rem; font-size: 0.8rem; line-height: 1.5; white-space: normal; text-align: left;">
+                            {{ g }}
+                          </div>
+                        {% endfor %}
                       {% else %}
                         <span class="subtle" style="font-size: 0.8rem; font-style: italic;">No notable gaps detected.</span>
                       {% endif %}
