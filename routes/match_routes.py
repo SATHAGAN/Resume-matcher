@@ -10,12 +10,16 @@ match_bp = Blueprint("match", __name__)
 @match_bp.route("/")
 def home():
     jobs = JobDescription.query.order_by(JobDescription.created_at.desc()).all()
+    
     # Count resumes per job dynamically
     job_data = []
     for jd in jobs:
         r_count = Resume.query.filter_by(job_description_id=jd.id).count()
         job_data.append({"jd": jd, "resume_count": r_count})
-    return render_template("home.html", job_data=job_data)
+        
+    # FIX: Pass both 'jobs' and 'job_data' so home.html can read them
+    return render_template("home.html", jobs=jobs, job_data=job_data)
+
 
 
 @match_bp.route("/clear-all", methods=["POST"])
