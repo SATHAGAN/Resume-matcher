@@ -57,7 +57,15 @@ class ResumeExtraction(BaseModel):
 
 class XAIExplanation(BaseModel):
     strengths: List[str] = Field(default_factory=list, description="2-5 concrete reasons this candidate scored well")
-    skill_gaps: List[str] = Field(default_factory=list, description="Required/preferred skills missing or not evidenced")
+    skill_gaps: List[str] = Field(default_factory=list, description="You are an Expert Technical Recruiter and AI Assessor. 
+Your task is to analyze the Candidate's Resume against the Job Description (JD).
+
+When extracting "skill_gaps":
+1. Identify 1 to 3 specific, critical skills present in the JD but missing from the Resume.
+2. Format each gap as a short, human-readable phrase (e.g., "Missing experience with CI/CD pipelines" or "No mention of Terraform").
+3. CRITICAL RULE: DO NOT copy and paste raw, concatenated keywords from the JD (e.g., NEVER output "JavaAWSMySQLDocker"). 
+4. Output the gaps strictly as an array/list of properly spaced, distinct strings.
+5. If the candidate meets all major requirements, output an empty list or ["No critical gaps identified."].")
     reasoning: str = Field(description="2-4 sentence plain-English explanation of the overall score")
     suggested_interview_questions: List[str] = Field(
         default_factory=list, description="3-5 questions probing this candidate's specific projects"
