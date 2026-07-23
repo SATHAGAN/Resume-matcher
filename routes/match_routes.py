@@ -9,17 +9,16 @@ match_bp = Blueprint("match", __name__)
 
 @match_bp.route("/")
 def home():
-    jobs = JobDescription.query.order_by(JobDescription.created_at.desc()).all()
+    jds = JobDescription.query.order_by(JobDescription.created_at.desc()).all()
+    resume_count = Resume.query.count()
     
     # Count resumes per job dynamically
     job_data = []
-    for jd in jobs:
+    for jd in jds:
         r_count = Resume.query.filter_by(job_description_id=jd.id).count()
         job_data.append({"jd": jd, "resume_count": r_count})
         
-    # FIX: Pass both 'jobs' and 'job_data' so home.html can read them
-    return render_template("home.html", jobs=jobs, job_data=job_data)
-
+    return render_template("home.html", jds=jds, job_data=job_data, resume_count=resume_count)
 
 
 @match_bp.route("/clear-all", methods=["POST"])
@@ -35,6 +34,20 @@ def clear_all():
     except Exception as exc:
         db.session.rollback()
         flash(f"Failed to clear data: {exc}", "error")
+    return redirect(url_for("match.home"))
+
+
+@match_bp.route("/jd/<int:jd_id>/delete", methods=["POST"])
+def delete_jd(jd_id):
+    """Deletes a specific Job Description and its associated candidates/matches."""
+    jd = JobDescription.query.get_or_404(jd_id)
+    try:
+        db.session.delete(jd)
+        db.session.commit()
+        flash(f"Job requirement \u201c{jd.title}\u201d has been deleted.", "success")
+    except Exception as exc:
+        db.session.rollback()
+        flash(f"Failed to delete job: {exc}", "error")
     return redirect(url_for("match.home"))
 
 
@@ -125,3 +138,4 @@ def dashboard(jd_id):
         top_results=top_results,
         other_results=other_results,
     )
+    
