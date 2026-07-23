@@ -42,6 +42,14 @@ def delete_jd(jd_id):
     """Deletes a specific Job Description and its associated candidates/matches."""
     jd = JobDescription.query.get_or_404(jd_id)
     try:
+        # FIX: Find all resumes linked to this job and delete them (and their projects/matches)
+        resumes = Resume.query.filter_by(job_description_id=jd.id).all()
+        for r in resumes:
+            CandidateProject.query.filter_by(resume_id=r.id).delete()
+            MatchResult.query.filter_by(resume_id=r.id).delete()
+            db.session.delete(r)
+            
+        # After cleaning up the resumes, delete the job description itself
         db.session.delete(jd)
         db.session.commit()
         flash(f"Job requirement \u201c{jd.title}\u201d has been deleted.", "success")
@@ -49,7 +57,7 @@ def delete_jd(jd_id):
         db.session.rollback()
         flash(f"Failed to delete job: {exc}", "error")
     return redirect(url_for("match.home"))
-
+    
 
 @match_bp.route("/jd/<int:jd_id>/match", methods=["POST"])
 def run_match(jd_id):
