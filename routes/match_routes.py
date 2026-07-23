@@ -92,19 +92,18 @@ def run_match(jd_id):
 
     db.session.commit()
 
-    # 4. Generate XAI write-ups for the top candidates
+    # 4. Always regenerate XAI write-ups for the top candidates to ensure fresh insights
     top_n = current_app.config["XAI_TOP_N"]
     top_results = MatchResult.query.filter_by(job_description_id=jd_id)\
         .order_by(MatchResult.final_score.desc())\
         .limit(top_n).all()
 
     for r in top_results:
-        if not r.xai_summary:  # Generate if missing
-            try:
-                r.xai_summary = xai_service.generate_xai(jd, r.resume, r.score_breakdown)
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
+        try:
+            r.xai_summary = xai_service.generate_xai(jd, r.resume, r.score_breakdown)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
     flash("Candidate rankings and scores successfully updated!", "success")
     return redirect(url_for("match.dashboard", jd_id=jd_id))
