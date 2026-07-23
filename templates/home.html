@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Workspace Overview | Resume Matcher{% endblock %}
+{% block title %}Talent Acquisition Dashboard | Resume Matcher{% endblock %}
 {% block content %}
 
 <div class="dashboard-top" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
   <div>
-    <h1>Workspace Overview</h1>
-    <p class="subtle">AI-powered candidate ranking and extraction.</p>
+    <h1>Talent Acquisition Dashboard</h1>
+    <p class="subtle">AI-driven insights for automated talent screening.</p>
     
     <!-- Upload JD Button -->
     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-      <a class="btn" href="{{ url_for('upload.new_jd') }}">Upload Job Description</a>
+      <a class="btn" href="{{ url_for('upload.new_jd') }}">Add Job Requirement</a>
     </div>
   </div>
 </div>
@@ -17,22 +17,22 @@
 <!-- Statistics Cards -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
   <div class="card" style="padding: 1.5rem 2rem;">
-    <div class="subtle">Total Resumes</div>
+    <div class="subtle">Candidates Evaluated</div>
     <div style="font-size: 2.5rem; font-weight: 700;">{{ resume_count|default('0') }}</div>
   </div>
   <div class="card" style="padding: 1.5rem 2rem;">
-    <div class="subtle">Active Jobs</div>
+    <div class="subtle">Active Roles</div>
     <div style="font-size: 2.5rem; font-weight: 700;">{{ jds|length if jds else 0 }}</div>
   </div>
 </div>
 
-<!-- FIX: Active Jobs Header (Left) & Clear All Data Button (Right) -->
+<!-- Active Jobs Header (Left) & Clear All Data Button (Right) -->
 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
-  <h2 style="margin: 0;">Active Job Requirements</h2>
+  <h2 style="margin: 0;">Active Hiring Pipelines</h2>
   
   <div>
-    <form action="{{ url_for('match.clear_all') }}" method="POST" onsubmit="return confirm('Are you sure you want to wipe ALL Jobs and Resumes? This cannot be undone.');" style="margin: 0;">
-      <button type="submit" class="btn btn-outline-danger">🗑️ Clear All Data</button>
+    <form action="{{ url_for('match.clear_all') }}" method="POST" onsubmit="return confirm('Are you sure you want to wipe ALL roles and candidates? This cannot be undone.');" style="margin: 0;">
+      <button type="submit" class="btn btn-outline-danger">🗑️ Reset Workspace</button>
     </form>
   </div>
 </div>
@@ -49,11 +49,11 @@
         
         <div style="display: flex; gap: 1rem; align-items: center;">
           <!-- Individual Delete Button -->
-          <form action="{{ url_for('match.delete_jd', jd_id=jd.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Delete {{ jd.title }} and its matches?');">
-            <button type="submit" class="btn btn-outline-danger" style="padding: 0.5rem 1rem;">Delete</button>
+          <form action="{{ url_for('match.delete_jd', jd_id=jd.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Remove role {{ jd.title }} and its evaluated candidates?');">
+            <button type="submit" class="btn btn-outline-danger" style="padding: 0.5rem 1rem;">Remove Role</button>
           </form>
           
-          <a class="btn btn-ghost" href="{{ url_for('match.dashboard', jd_id=jd.id) }}" style="border-color: var(--primary); color: var(--primary) !important;">View Rankings &rarr;</a>
+          <a class="btn btn-ghost" href="{{ url_for('match.dashboard', jd_id=jd.id) }}" style="border-color: var(--primary); color: var(--primary) !important;">Analyze Matches &rarr;</a>
         </div>
       </div>
     {% endfor %}
@@ -61,8 +61,8 @@
 {% else %}
   <div class="card" style="text-align: center; padding: 4rem 2rem; border-style: dashed;">
     <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
-    <h3>No active jobs</h3>
-    <p class="subtle">Upload your first Job Description to begin matching.</p>
+    <h3>No active roles</h3>
+    <p class="subtle">Add your first Job Requirement to begin matching.</p>
   </div>
 {% endif %}
 {% endblock %}
