@@ -89,7 +89,15 @@
           <h2 style="margin: 0.25rem 0;">{{ r.resume.candidate_name }}</h2>
           <div class="subtle">{{ r.resume.total_experience_years|round(1) }} YOE • {{ r.resume.email }}</div>
         </div>
-        <div class="score-badge {{ ring }}">{{ score }}</div>
+        
+        <!-- FIX: Added "SCORE" label above the circular badge -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;">
+          <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+            Score
+          </span>
+          <div class="score-badge {{ ring }}">{{ score }}</div>
+        </div>
+
       </div>
 
       <!-- AI Score Breakdown -->
