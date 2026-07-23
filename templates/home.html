@@ -2,27 +2,19 @@
 {% block title %}Workspace Overview | Resume Matcher{% endblock %}
 {% block content %}
 
-<div class="dashboard-top" style="display: flex; justify-content: space-between; align-items: flex-start;">
+<div class="dashboard-top" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
   <div>
     <h1>Workspace Overview</h1>
     <p class="subtle">AI-powered candidate ranking and extraction.</p>
     
-    <!-- Reordered Buttons: Upload JD first (Primary), Add Resumes second (Ghost) -->
-    <!-- Reordered Buttons: Upload JD first (Primary) -->
+    <!-- Upload JD Button -->
     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
       <a class="btn" href="{{ url_for('upload.new_jd') }}">Upload Job Description</a>
     </div>
   </div>
-  
-  <!-- Global Clear All Data Button -->
-  <div>
-    <!-- Updated to use Flask's url_for pointing to the clear_all route in match.py -->
-    <form action="{{ url_for('match.clear_all') }}" method="POST" onsubmit="return confirm('Are you sure you want to wipe ALL Jobs and Resumes? This cannot be undone.');">
-      <button type="submit" class="btn btn-outline-danger">🗑️ Clear All Data</button>
-    </form>
-  </div>
 </div>
 
+<!-- Statistics Cards -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
   <div class="card" style="padding: 1.5rem 2rem;">
     <div class="subtle">Total Resumes</div>
@@ -34,7 +26,18 @@
   </div>
 </div>
 
-<h2 style="margin-bottom: 1.5rem;">Active Job Requirements</h2>
+<!-- FIX: Active Jobs Header (Left) & Clear All Data Button (Right) -->
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+  <h2 style="margin: 0;">Active Job Requirements</h2>
+  
+  <div>
+    <form action="{{ url_for('match.clear_all') }}" method="POST" onsubmit="return confirm('Are you sure you want to wipe ALL Jobs and Resumes? This cannot be undone.');" style="margin: 0;">
+      <button type="submit" class="btn btn-outline-danger">🗑️ Clear All Data</button>
+    </form>
+  </div>
+</div>
+
+<!-- Active Jobs List -->
 {% if jds %}
   <div style="display: grid; gap: 1rem;">
     {% for jd in jds %}
@@ -46,7 +49,6 @@
         
         <div style="display: flex; gap: 1rem; align-items: center;">
           <!-- Individual Delete Button -->
-          <!-- Updated to use Flask's url_for pointing to the delete_jd route in match.py -->
           <form action="{{ url_for('match.delete_jd', jd_id=jd.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Delete {{ jd.title }} and its matches?');">
             <button type="submit" class="btn btn-outline-danger" style="padding: 0.5rem 1rem;">Delete</button>
           </form>
