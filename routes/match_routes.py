@@ -42,7 +42,7 @@ def delete_jd(jd_id):
     """Deletes a specific Job Description and its associated candidates/matches."""
     jd = JobDescription.query.get_or_404(jd_id)
     try:
-        # FIX: Find all resumes linked to this job and delete them (and their projects/matches)
+        # Find all resumes linked to this job and delete them (and their projects/matches)
         resumes = Resume.query.filter_by(job_description_id=jd.id).all()
         for r in resumes:
             CandidateProject.query.filter_by(resume_id=r.id).delete()
@@ -57,7 +57,7 @@ def delete_jd(jd_id):
         db.session.rollback()
         flash(f"Failed to delete job: {exc}", "error")
     return redirect(url_for("match.home"))
-    
+
 
 @match_bp.route("/jd/<int:jd_id>/match", methods=["POST"])
 def run_match(jd_id):
@@ -100,7 +100,7 @@ def run_match(jd_id):
 
     db.session.commit()
 
-    # 4. Always regenerate XAI write-ups for the top candidates to ensure fresh insights
+    # 4. Generate XAI write-ups for the top candidates
     top_n = current_app.config["XAI_TOP_N"]
     top_results = MatchResult.query.filter_by(job_description_id=jd_id)\
         .order_by(MatchResult.final_score.desc())\
@@ -108,9 +108,17 @@ def run_match(jd_id):
 
     for r in top_results:
         try:
-            r.xai_summary = xai_service.generate_xai(jd, r.resume, r.score_breakdown)
+            # FIX: Call generate_explanation and pass r.resume.projects as the 3rd argument
+            r.xai_summary = xai_service.generate_explanation(
+                jd, 
+                r.resume, 
+                r.resume.projects, 
+                r.score_breakdown
+            )
             db.session.commit()
-        except Exception:
+        except Exception as e:
+            # If there's an error, print it to the terminal so we don't fail silently next time
+            print(f"XAI Generation Error for Resume ID {r.resume.id}: {e}")
             db.session.rollback()
 
     flash("Candidate rankings and scores successfully updated!", "success")
